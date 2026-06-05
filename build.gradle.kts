@@ -15,7 +15,7 @@ group = "hexlet.code"
 version = "0.0.1-SNAPSHOT"
 
 application {
-	mainClass = "hexlet.code.AppAplication"
+	mainClass = "hexlet.code.AppApplication"
 }
 
 repositories {
@@ -69,6 +69,5 @@ sonar {
 		property("sonar.organization", "dmitriykorchagin95")
 		property("sonar.host.url", "https://sonarcloud.io")
 		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
-		property("sonar.java.coveragePlugin", "jacoco")
 	}
 }
