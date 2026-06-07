@@ -1,18 +1,22 @@
 package hexlet.code.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import java.time.Instant;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.Instant;
-import java.util.Objects;
-
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -27,19 +31,15 @@ public class User {
     @ToString.Include
     private Long id;
 
-    @NotBlank
-    @Column(nullable = false, length = 20)
+    @NotBlank @Column(nullable = false, length = 20)
     @ToString.Include
     private String firstName;
 
-    @NotBlank
-    @Column(nullable = false, length = 20)
+    @NotBlank @Column(nullable = false, length = 20)
     @ToString.Include
     private String lastName;
 
-    @Email
-    @NotBlank
-    @Column(nullable = false, unique = true, length = 255)
+    @Email @NotBlank @Column(nullable = false, unique = true, length = 255)
     @ToString.Include
     private String email;
 
@@ -57,10 +57,13 @@ public class User {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         User user = (User) o;
-        return Objects.equals(getId(), user.getId()) && getFirstName().equals(user.getFirstName()) && getLastName().equals(user.getLastName()) && getEmail().equals(user.getEmail());
+        return Objects.equals(getId(), user.getId()) && getFirstName().equals(user.getFirstName())
+                && getLastName().equals(user.getLastName()) && getEmail().equals(user.getEmail());
     }
 
     @Override
