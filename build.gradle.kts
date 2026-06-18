@@ -7,7 +7,7 @@ plugins {
 	id("com.diffplug.spotless") version "8.6.0"
 	id("org.sonarqube") version "7.3.0.8198"
 	id("io.freefair.lombok") version "8.6"
-	id("org.springframework.boot") version "4.0.6"
+	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -28,16 +28,27 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
-//	implementation("org.springframework.boot:spring-boot-starter-security")
-//	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
+	implementation("org.mapstruct:mapstruct:1.6.3")
+	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+	implementation("net.datafaker:datafaker:2.4.2")
+	implementation("org.instancio:instancio-junit:5.6.0")
+//	implementation("tools.jackson.core:jackson-databind:3.0.0")
+
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.postgresql:postgresql")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation("org.springframework.security:spring-security-test")
+	testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.37.0")
+
+
 }
 
 tasks.test {
@@ -49,9 +60,10 @@ spotless {
 	java {
 		importOrder()
 		removeUnusedImports()
-		eclipse().sortMembersEnabled(true)
 		formatAnnotations()
 		leadingTabsToSpaces(4)
+		endWithNewline()
+		trimTrailingWhitespace()
 	}
 }
 

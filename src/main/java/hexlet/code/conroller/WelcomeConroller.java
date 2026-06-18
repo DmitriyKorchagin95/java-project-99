@@ -10,6 +10,6 @@ public class WelcomeConroller {
 
     @GetMapping("/welcome")
     public ResponseEntity<?> welcome() {
-        return new ResponseEntity<>("Welcome to Spring", HttpStatus.OK);
+        return new ResponseEntity<>("Welcome to Spring Boot!", HttpStatus.OK);
     }
 }
