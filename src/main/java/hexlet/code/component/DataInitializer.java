@@ -1,11 +1,11 @@
 package hexlet.code.component;
 
-import hexlet.code.model.User;
+import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,7 +14,7 @@ public class DataInitializer implements ApplicationRunner {
 
     private static final String ADMIN_EMAIL = "hexlet@example.com";
 
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
     private final UserRepository userRepository;
 
     @Override
@@ -24,11 +24,11 @@ public class DataInitializer implements ApplicationRunner {
             return;
         }
 
-        User admin = new User();
+        var admin = new UserCreateDTO();
         admin.setEmail(ADMIN_EMAIL);
         admin.setFirstName("Admin");
         admin.setLastName("Admin");
-        admin.setPassword(passwordEncoder.encode("qwerty"));
-        userRepository.save(admin);
+        admin.setPassword("qwerty");
+        userService.create(admin);
     }
 }

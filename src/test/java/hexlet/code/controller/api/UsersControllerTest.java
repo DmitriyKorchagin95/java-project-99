@@ -60,7 +60,7 @@ class UsersControllerTest {
                         () -> faker.internet().emailAddress()
                 )
                 .supply(
-                        Select.field(User::getPassword),
+                        Select.field(User::getPasswordHash),
                         () -> faker.internet().password()
                 )
                 .create();

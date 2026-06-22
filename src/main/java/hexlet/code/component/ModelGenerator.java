@@ -1,8 +1,9 @@
-package hexlet.code.util;
+package hexlet.code.component;
 
 import hexlet.code.model.User;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.instancio.Model;
@@ -11,14 +12,12 @@ import org.springframework.stereotype.Component;
 
 @Getter
 @Component
+@RequiredArgsConstructor
 public class ModelGenerator {
-    private Model<User> userModel;
 
     private final Faker faker;
 
-    public ModelGenerator(Faker faker) {
-        this.faker = faker;
-    }
+    private Model<User> userModel;
 
     @PostConstruct
     private void init() {

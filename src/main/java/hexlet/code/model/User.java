@@ -10,6 +10,9 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +21,8 @@ import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -27,7 +32,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @ToString(includeFieldNames = true, onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "users")
-public class User implements BaseEntity {
+public class User implements BaseEntity, UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,20 +40,20 @@ public class User implements BaseEntity {
     @ToString.Include
     private Long id;
 
-    @NotBlank @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20)
     @ToString.Include
-    private String firstName;
+    @NotBlank private String firstName;
 
-    @NotBlank @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20)
     @ToString.Include
-    private String lastName;
+    @NotBlank private String lastName;
 
-    @NotBlank @Email @Column(nullable = false, unique = true, length = 255)
+    @Column(nullable = false, unique = true, length = 255)
     @ToString.Include
-    private String email;
+    @NotBlank @Email private String email;
 
     @Column(nullable = false, length = 255)
-    private String password;
+    private String passwordHash;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
@@ -57,4 +62,39 @@ public class User implements BaseEntity {
     @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getPassword() {
+        return passwordHash;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
+    }
 }

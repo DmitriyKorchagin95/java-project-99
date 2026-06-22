@@ -2,10 +2,14 @@ spring:
   application:
     name: Task manager
 datasource:
-  driver-class-name: org.h2.Driver   # общий драйвер (будет переопределен для prod)
+  driver-class-name: org.h2.Driver
 jpa:
   ddl-auto: update
   show-sql: true
   properties:
   hibernate:
     format_sql: true
+
+rsa:
+  public-key: classpath:certs/public.pem
+  private-key: classpath:certs/private.pem
