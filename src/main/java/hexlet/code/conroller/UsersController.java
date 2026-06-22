@@ -5,8 +5,10 @@ import hexlet.code.dto.UserUpdateDTO;
 import hexlet.code.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UsersController {
 
@@ -26,11 +28,12 @@ public class UsersController {
     @GetMapping
     public ResponseEntity<?> index() {
         var users = userService.findAll();
+        int totalCount = users.size();
 
-        return new ResponseEntity<>(
-                users,
-                HttpStatus.OK
-        );
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Total-Count", String.valueOf(totalCount));
+
+        return new ResponseEntity<>(users, headers, HttpStatus.OK);
     }
 
     @PostMapping

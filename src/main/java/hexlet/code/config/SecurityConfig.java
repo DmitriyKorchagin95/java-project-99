@@ -26,12 +26,12 @@ public class SecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
     private final JwtDecoder jwtDecoder;
-    private final CustomUserDetailsService userService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
         var provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userService);
+        provider.setUserDetailsService(customUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
@@ -56,7 +56,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
-                                "/login"
+                                "/index.html",
+                                "/assets/**",
+                                "/api/login"
                         ).permitAll()
                         .anyRequest()
                         .authenticated()
