@@ -70,7 +70,7 @@ class UsersControllerTest {
     void testIndex() throws Exception {
         userRepository.save(testUser);
 
-        var result = mockMvc.perform(get("/api/v1/users"))
+        var result = mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -87,7 +87,7 @@ class UsersControllerTest {
         testUser = userRepository.save(testUser);
 
         var result = mockMvc.perform(
-                        get("/api/v1/users/{id}", testUser.getId())
+                        get("/api/users/{id}", testUser.getId())
                 )
                 .andExpect(status().isOk())
                 .andReturn();
@@ -110,9 +110,9 @@ class UsersControllerTest {
         dto.setEmail(faker.internet().emailAddress());
         dto.setFirstName(faker.name().firstName());
         dto.setLastName(faker.name().lastName());
-        dto.setPassword("password123");
+        dto.setPassword("password");
 
-        var request = post("/api/v1/users")
+        var request = post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(dto));
 
@@ -120,10 +120,6 @@ class UsersControllerTest {
                 .andExpect(status().isCreated());
 
         var user = userRepository.findByEmail(dto.getEmail()).orElseThrow();
-
-        System.out.println("Password from DTO = " + dto.getPassword());
-
-        System.out.println("Password from DB  = " + user.getPassword());
 
         assertNotNull(user);
 
@@ -148,7 +144,7 @@ class UsersControllerTest {
         var dto = new UserUpdateDTO();
         dto.setEmail(JsonNullable.of("updated@email.com"));
 
-        var request = patch("/api/v1/users/{id}", testUser.getId())
+        var request = patch("/api/users/{id}", testUser.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(dto));
 
@@ -171,7 +167,7 @@ class UsersControllerTest {
         testUser = userRepository.save(testUser);
 
         mockMvc.perform(
-                        delete("/api/v1/users/{id}", testUser.getId())
+                        delete("/api/users/{id}", testUser.getId())
                 )
                 .andExpect(status().isNoContent());
 
@@ -185,10 +181,10 @@ class UsersControllerTest {
         var dto = new UserCreateDTO();
 
         dto.setEmail("invalid-email");
-        dto.setPassword("123");
+        dto.setPassword("123456");
 
         mockMvc.perform(
-                        post("/api/v1/users")
+                        post("/api/users")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
@@ -203,7 +199,7 @@ class UsersControllerTest {
         dto.setEmail(JsonNullable.of("not-email"));
 
         mockMvc.perform(
-                        patch("/api/v1/users/{id}", testUser.getId())
+                        patch("/api/users/{id}", testUser.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )

@@ -12,7 +12,6 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,19 +39,19 @@ public class User implements BaseEntity, UserDetails {
     @ToString.Include
     private Long id;
 
-    @Column(nullable = false, length = 20)
+    @Column
     @ToString.Include
     @NotBlank private String firstName;
 
-    @Column(nullable = false, length = 20)
+    @Column
     @ToString.Include
     @NotBlank private String lastName;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(nullable = false, unique = true)
     @ToString.Include
     @NotBlank @Email private String email;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String passwordHash;
 
     @CreatedDate
