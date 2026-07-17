@@ -21,13 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public UserDTO create(UserCreateDTO dto) {
         log.info("Creating user with email={}", dto.getEmail());
 
@@ -64,6 +64,7 @@ public class UserService implements UserDetailsService {
                 .toList();
     }
 
+    @Transactional
     public UserDTO update(Long id, UserUpdateDTO dto) {
         log.info("Updating user id={}", id);
 
@@ -86,6 +87,7 @@ public class UserService implements UserDetailsService {
         return userMapper.map(updatedUser);
     }
 
+    @Transactional
     public void delete(Long id) {
         log.info("Deleting user id={}", id);
 
@@ -104,6 +106,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email)
             throws UsernameNotFoundException {
 

@@ -36,7 +36,8 @@ public class TaskStatus implements BaseEntity {
 
     @Column(unique = true, nullable = false)
     @ToString.Include
-    @NotBlank @Size(min = 1) private String name;
+    @NotBlank @Size(min = 1)
+    private String name;
 
     @Column(unique = true, nullable = false)
     @ToString.Include
