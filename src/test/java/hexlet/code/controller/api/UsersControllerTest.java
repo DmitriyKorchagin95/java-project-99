@@ -31,6 +31,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc(addFilters = false)
 class UsersControllerTest {
 
+    private static final String BASE_URL = "/api/users";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -51,32 +53,21 @@ class UsersControllerTest {
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
-
-        testUser = Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .ignore(Select.field(User::getCreatedAt))
-                .supply(
-                        Select.field(User::getEmail),
-                        () -> faker.internet().emailAddress()
-                )
-                .supply(
-                        Select.field(User::getPasswordHash),
-                        () -> faker.internet().password()
-                )
-                .create();
+        testUser = buildUser();
     }
 
     @Test
     void testIndex() throws Exception {
         userRepository.save(testUser);
 
-        var result = mockMvc.perform(get("/api/users"))
+        var body = mockMvc.perform(get(BASE_URL))
                 .andExpect(status().isOk())
-                .andReturn();
-
-        var body = result.getResponse().getContentAsString();
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
 
         assertThatJson(body).isArray();
+
         assertThatJson(body)
                 .inPath("$[0].email")
                 .isEqualTo(testUser.getEmail());
@@ -86,13 +77,11 @@ class UsersControllerTest {
     void testShow() throws Exception {
         testUser = userRepository.save(testUser);
 
-        var result = mockMvc.perform(
-                        get("/api/users/{id}", testUser.getId())
-                )
+        var body = mockMvc.perform(get(BASE_URL + "/{id}", testUser.getId()))
                 .andExpect(status().isOk())
-                .andReturn();
-
-        var body = result.getResponse().getContentAsString();
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
 
         assertThatJson(body)
                 .node("email")
@@ -105,18 +94,13 @@ class UsersControllerTest {
 
     @Test
     void testCreate() throws Exception {
-        var dto = new UserCreateDTO();
+        var dto = buildCreateDto();
 
-        dto.setEmail(faker.internet().emailAddress());
-        dto.setFirstName(faker.name().firstName());
-        dto.setLastName(faker.name().lastName());
-        dto.setPassword("password");
-
-        var request = post("/api/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(dto));
-
-        mockMvc.perform(request)
+        mockMvc.perform(
+                        post(BASE_URL)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(om.writeValueAsString(dto))
+                )
                 .andExpect(status().isCreated());
 
         var user = userRepository.findByEmail(dto.getEmail()).orElseThrow();
@@ -136,24 +120,34 @@ class UsersControllerTest {
     }
 
     @Test
+    void testCreateValidationError() throws Exception {
+        var dto = buildCreateDto();
+        dto.setEmail("invalid-email");
+
+        mockMvc.perform(
+                        post(BASE_URL)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(om.writeValueAsString(dto))
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testUpdate() throws Exception {
         testUser = userRepository.save(testUser);
 
         var oldFirstName = testUser.getFirstName();
 
-        var dto = new UserUpdateDTO();
-        dto.setEmail(JsonNullable.of("updated@email.com"));
+        var dto = buildUpdateDto(JsonNullable.of("updated@email.com"));
 
-        var request = patch("/api/users/{id}", testUser.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(dto));
-
-        mockMvc.perform(request)
+        mockMvc.perform(
+                        patch(BASE_URL + "/{id}", testUser.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(om.writeValueAsString(dto))
+                )
                 .andExpect(status().isOk());
 
-        var updatedUser = userRepository
-                .findById(testUser.getId())
-                .orElseThrow();
+        var updatedUser = userRepository.findById(testUser.getId()).orElseThrow();
 
         assertThat(updatedUser.getEmail())
                 .isEqualTo("updated@email.com");
@@ -163,46 +157,57 @@ class UsersControllerTest {
     }
 
     @Test
-    void testDestroy() throws Exception {
-        testUser = userRepository.save(testUser);
-
-        mockMvc.perform(
-                        delete("/api/users/{id}", testUser.getId())
-                )
-                .andExpect(status().isNoContent());
-
-        assertThat(
-                userRepository.existsById(testUser.getId())
-        ).isFalse();
-    }
-
-    @Test
-    void testCreateValidationError() throws Exception {
-        var dto = new UserCreateDTO();
-
-        dto.setEmail("invalid-email");
-        dto.setPassword("123456");
-
-        mockMvc.perform(
-                        post("/api/users")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(om.writeValueAsString(dto))
-                )
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void testUpdateValidationError() throws Exception {
         testUser = userRepository.save(testUser);
 
-        var dto = new UserUpdateDTO();
-        dto.setEmail(JsonNullable.of("not-email"));
+        var dto = buildUpdateDto(JsonNullable.of("not-email"));
 
         mockMvc.perform(
-                        patch("/api/users/{id}", testUser.getId())
+                        patch(BASE_URL + "/{id}", testUser.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testDestroy() throws Exception {
+        testUser = userRepository.save(testUser);
+
+        mockMvc.perform(delete(BASE_URL + "/{id}", testUser.getId()))
+                .andExpect(status().isNoContent());
+
+        assertThat(userRepository.existsById(testUser.getId()))
+                .isFalse();
+    }
+
+    private User buildUser() {
+        return Instancio.of(User.class)
+                .ignore(Select.field(User::getId))
+                .ignore(Select.field(User::getCreatedAt))
+                .supply(
+                        Select.field(User::getEmail),
+                        () -> faker.internet().emailAddress()
+                )
+                .supply(
+                        Select.field(User::getPasswordHash),
+                        () -> faker.internet().password()
+                )
+                .create();
+    }
+
+    private UserCreateDTO buildCreateDto() {
+        var dto = new UserCreateDTO();
+        dto.setEmail(faker.internet().emailAddress());
+        dto.setFirstName(faker.name().firstName());
+        dto.setLastName(faker.name().lastName());
+        dto.setPassword("password");
+        return dto;
+    }
+
+    private UserUpdateDTO buildUpdateDto(JsonNullable<String> email) {
+        var dto = new UserUpdateDTO();
+        dto.setEmail(email);
+        return dto;
     }
 }
