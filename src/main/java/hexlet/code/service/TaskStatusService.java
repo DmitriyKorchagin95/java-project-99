@@ -3,9 +3,11 @@ package hexlet.code.service;
 import hexlet.code.dto.TaskStatusCreateDTO;
 import hexlet.code.dto.TaskStatusDTO;
 import hexlet.code.dto.TaskStatusUpdateDTO;
+import hexlet.code.exception.EntityInUseException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskStatusMapper;
 import hexlet.code.model.TaskStatus;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import java.util.List;
 import java.util.Optional;
@@ -17,10 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class TaskStatusesService {
+public class TaskStatusService {
 
     private final TaskStatusRepository taskStatusRepository;
     private final TaskStatusMapper taskStatusMapper;
+    private final TaskRepository taskRepository;
 
     @Transactional
     public TaskStatusDTO create(TaskStatusCreateDTO dto) {
@@ -75,6 +78,10 @@ public class TaskStatusesService {
                         new ResourceNotFoundException(
                                 String.format("Task status with id %d not found", id)
                         ));
+
+        if (taskRepository.existsByTaskStatus(taskStatus)) {
+            throw new EntityInUseException("Task status is used by tasks");
+        }
 
         taskStatusRepository.delete(taskStatus);
     }

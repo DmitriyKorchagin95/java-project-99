@@ -4,7 +4,7 @@ import hexlet.code.dto.TaskStatusCreateDTO;
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
-import hexlet.code.service.TaskStatusesService;
+import hexlet.code.service.TaskStatusService;
 import hexlet.code.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
@@ -20,7 +20,7 @@ public class DataInitializer implements ApplicationRunner {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    private final TaskStatusesService taskStatusesService;
+    private final TaskStatusService taskStatusService;
     private final TaskStatusRepository taskStatusRepository;
 
     @Override
@@ -52,6 +52,6 @@ public class DataInitializer implements ApplicationRunner {
         taskStatus.setName(name);
         taskStatus.setSlug(slug);
 
-        taskStatusesService.create(taskStatus);
+        taskStatusService.create(taskStatus);
     }
 }

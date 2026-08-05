@@ -3,9 +3,11 @@ package hexlet.code.service;
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.dto.UserDTO;
 import hexlet.code.dto.UserUpdateDTO;
+import hexlet.code.exception.EntityInUseException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,7 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final TaskRepository taskRepository;
 
     @Transactional
     public UserDTO create(UserCreateDTO dto) {
@@ -96,6 +99,10 @@ public class UserService implements UserDetailsService {
                         new ResourceNotFoundException(
                                 String.format("User with id %d not found", id)
                         ));
+
+        if (taskRepository.existsByAssignee(user)) {
+            throw new EntityInUseException("User has assigned tasks");
+        }
 
         userRepository.delete(user);
     }

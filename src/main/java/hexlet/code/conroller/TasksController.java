@@ -1,8 +1,8 @@
 package hexlet.code.conroller;
 
-import hexlet.code.dto.TaskStatusCreateDTO;
-import hexlet.code.dto.TaskStatusUpdateDTO;
-import hexlet.code.service.TaskStatusService;
+import hexlet.code.dto.TaskCreateDTO;
+import hexlet.code.dto.TaskUpdateDTO;
+import hexlet.code.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -18,55 +18,55 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/task_statuses")
+@RequestMapping("/api/tasks")
 @RequiredArgsConstructor
-public class TaskStatusesController {
+public class TasksController {
 
-    private final TaskStatusService taskStatusService;
+    private final TaskService taskService;
 
     @GetMapping
     public ResponseEntity<?> index() {
-        var taskStatuses = taskStatusService.findAll();
-        var totalCount = taskStatuses.size();
+        var tasks = taskService.findAll();
+        var totalCount = tasks.size();
         var headers = new HttpHeaders();
         headers.add("X-Total-Count", String.valueOf(totalCount));
 
-        return new ResponseEntity<>(taskStatuses, headers, HttpStatus.OK);
+        return new ResponseEntity<>(tasks, headers, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody TaskStatusCreateDTO taskStatusData) {
-        var taskStatus = taskStatusService.create(taskStatusData);
+    public ResponseEntity<?> create(@Valid @RequestBody TaskCreateDTO taskData) {
+        var task = taskService.create(taskData);
 
         return new ResponseEntity<>(
-                taskStatus,
+                task,
                 HttpStatus.CREATED
         );
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> show(@PathVariable Long id) {
-        var taskStatus = taskStatusService.findById(id);
+        var task = taskService.findById(id);
 
         return new ResponseEntity<>(
-                taskStatus,
+                task,
                 HttpStatus.OK
         );
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> update(@Valid @RequestBody TaskStatusUpdateDTO taskStatusData, @PathVariable Long id) {
-        var taskStatus = taskStatusService.update(id, taskStatusData);
+    public ResponseEntity<?> update(@Valid @RequestBody TaskUpdateDTO taskData, @PathVariable Long id) {
+        var task = taskService.update(id, taskData);
 
         return new ResponseEntity<>(
-                taskStatus,
+                task,
                 HttpStatus.OK
         );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
-        taskStatusService.delete(id);
+        taskService.delete(id);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
