@@ -86,7 +86,9 @@ class TasksControllerTest {
                 )
                 .supply(
                         Select.field(TaskStatus::getSlug),
-                        () -> faker.lorem().word() + "-" + faker.number().digits(5)
+                        () -> faker.lorem().word()
+                                + "-"
+                                + faker.number().digits(5)
                 )
                 .create();
 
@@ -95,6 +97,7 @@ class TasksControllerTest {
         task = Instancio.of(Task.class)
                 .ignore(Select.field(Task::getId))
                 .ignore(Select.field(Task::getCreatedAt))
+                .ignore(Select.field(Task::getLabels))
                 .set(Select.field(Task::getTaskStatus), taskStatus)
                 .set(Select.field(Task::getAssignee), assignee)
                 .create();
