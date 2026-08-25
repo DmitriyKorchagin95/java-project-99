@@ -1,6 +1,7 @@
 package hexlet.code.conroller;
 
 import hexlet.code.dto.TaskCreateDTO;
+import hexlet.code.dto.TaskParamsDTO;
 import hexlet.code.dto.TaskUpdateDTO;
 import hexlet.code.service.TaskService;
 import jakarta.validation.Valid;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,15 +27,25 @@ public class TasksController {
     private final TaskService taskService;
 
     @GetMapping
-    public ResponseEntity<?> index() {
-        var tasks = taskService.findAll();
-        var totalCount = tasks.size();
+    public ResponseEntity<?> index(
+            TaskParamsDTO params,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        var tasks = taskService.findAll(params, page, limit);
+
         var headers = new HttpHeaders();
-        headers.add("X-Total-Count", String.valueOf(totalCount));
+        headers.add(
+                "X-Total-Count",
+                String.valueOf(tasks.getTotalElements())
+        );
 
-        return new ResponseEntity<>(tasks, headers, HttpStatus.OK);
+        return new ResponseEntity<>(
+                tasks.getContent(),
+                headers,
+                HttpStatus.OK
+        );
     }
-
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody TaskCreateDTO taskData) {
         var task = taskService.create(taskData);

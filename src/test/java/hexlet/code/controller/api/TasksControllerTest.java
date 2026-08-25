@@ -7,17 +7,21 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.TaskCreateDTO;
 import hexlet.code.dto.TaskUpdateDTO;
+import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
+import java.util.Set;
 import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.instancio.Select;
@@ -44,6 +48,9 @@ class TasksControllerTest {
     private TaskRepository taskRepository;
 
     @Autowired
+    private LabelRepository labelRepository;
+
+    @Autowired
     private TaskStatusRepository taskStatusRepository;
 
     @Autowired
@@ -59,48 +66,14 @@ class TasksControllerTest {
     @BeforeEach
     void setUp() {
         taskRepository.deleteAll();
+        labelRepository.deleteAll();
         userRepository.deleteAll();
         taskStatusRepository.deleteAll();
 
-        assignee = Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .ignore(Select.field(User::getCreatedAt))
-                .supply(
-                        Select.field(User::getEmail),
-                        () -> faker.internet().emailAddress()
-                )
-                .supply(
-                        Select.field(User::getPasswordHash),
-                        () -> faker.internet().password()
-                )
-                .create();
+        assignee = createAssignee();
+        taskStatus = createTaskStatus();
 
-        assignee = userRepository.save(assignee);
-
-        taskStatus = Instancio.of(TaskStatus.class)
-                .ignore(Select.field(TaskStatus::getId))
-                .ignore(Select.field(TaskStatus::getCreatedAt))
-                .supply(
-                        Select.field(TaskStatus::getName),
-                        () -> faker.book().title()
-                )
-                .supply(
-                        Select.field(TaskStatus::getSlug),
-                        () -> faker.lorem().word()
-                                + "-"
-                                + faker.number().digits(5)
-                )
-                .create();
-
-        taskStatus = taskStatusRepository.save(taskStatus);
-
-        task = Instancio.of(Task.class)
-                .ignore(Select.field(Task::getId))
-                .ignore(Select.field(Task::getCreatedAt))
-                .ignore(Select.field(Task::getLabels))
-                .set(Select.field(Task::getTaskStatus), taskStatus)
-                .set(Select.field(Task::getAssignee), assignee)
-                .create();
+        task = createTask();
     }
 
     @Test
@@ -109,15 +82,150 @@ class TasksControllerTest {
 
         var result = mockMvc.perform(get("/api/tasks"))
                 .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
                 .andReturn();
 
         var body = result.getResponse().getContentAsString();
 
         assertThatJson(body).isArray();
-
         assertThatJson(body)
                 .inPath("$[0].name")
                 .isEqualTo(task.getName());
+    }
+
+    @Test
+    void testIndexFilterByTitle() throws Exception {
+        taskRepository.save(task);
+
+        var anotherTask = createTask();
+        anotherTask.setName("Another task");
+        taskRepository.save(anotherTask);
+
+        var result = mockMvc.perform(
+                        get("/api/tasks")
+                                .param("titleCont", task.getName())
+                )
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).isArray();
+        assertThatJson(body)
+                .inPath("$[0].name")
+                .isEqualTo(task.getName());
+    }
+
+    @Test
+    void testIndexFilterByAssignee() throws Exception {
+        taskRepository.save(task);
+
+        var result = mockMvc.perform(
+                        get("/api/tasks")
+                                .param("assigneeId", assignee.getId().toString())
+                )
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).isArray();
+        assertThatJson(body)
+                .inPath("$[0].name")
+                .isEqualTo(task.getName());
+    }
+
+    @Test
+    void testIndexFilterByStatus() throws Exception {
+        taskRepository.save(task);
+
+        var result = mockMvc.perform(
+                        get("/api/tasks")
+                                .param("status", taskStatus.getSlug())
+                )
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).isArray();
+        assertThatJson(body)
+                .inPath("$[0].name")
+                .isEqualTo(task.getName());
+    }
+
+    @Test
+    void testIndexFilterByLabel() throws Exception {
+        var label = createLabel();
+        task.setLabels(Set.of(label));
+
+        taskRepository.save(task);
+
+        var result = mockMvc.perform(
+                        get("/api/tasks")
+                                .param("labelId", label.getId().toString())
+                )
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).isArray();
+        assertThatJson(body)
+                .inPath("$[0].name")
+                .isEqualTo(task.getName());
+    }
+
+    @Test
+    void testIndexFilterByMultipleParameters() throws Exception {
+        var label = createLabel();
+        task.setLabels(Set.of(label));
+
+        taskRepository.save(task);
+
+        var result = mockMvc.perform(
+                        get("/api/tasks")
+                                .param("titleCont", task.getName().substring(0, 3))
+                                .param("assigneeId", assignee.getId().toString())
+                                .param("status", taskStatus.getSlug())
+                                .param("labelId", label.getId().toString())
+                )
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).isArray();
+        assertThatJson(body)
+                .inPath("$[0].name")
+                .isEqualTo(task.getName());
+    }
+
+    @Test
+    void testIndexPagination() throws Exception {
+        taskRepository.save(task);
+        taskRepository.save(createTask());
+
+        var result = mockMvc.perform(
+                        get("/api/tasks")
+                                .param("page", "1")
+                                .param("limit", "1")
+                )
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "2"))
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+
+        assertThatJson(body).isArray();
+        assertThatJson(body)
+                .inPath("size()")
+                .isEqualTo(1);
     }
 
     @Test
@@ -133,19 +241,19 @@ class TasksControllerTest {
         var body = result.getResponse().getContentAsString();
 
         assertThatJson(body)
-                .node("name")
+                .inPath("name")
                 .isEqualTo(task.getName());
 
         assertThatJson(body)
-                .node("description")
+                .inPath("description")
                 .isEqualTo(task.getDescription());
 
         assertThatJson(body)
-                .node("status")
+                .inPath("status")
                 .isEqualTo(taskStatus.getSlug());
 
         assertThatJson(body)
-                .node("assigneeId")
+                .inPath("assigneeId")
                 .isEqualTo(assignee.getId());
     }
 
@@ -175,21 +283,11 @@ class TasksControllerTest {
         var created = taskRepository.findAll().getFirst();
 
         assertNotNull(created);
-
-        assertThat(created.getName())
-                .isEqualTo(dto.getName());
-
-        assertThat(created.getDescription())
-                .isEqualTo(dto.getDescription());
-
-        assertThat(created.getIndex())
-                .isEqualTo(dto.getIndex());
-
-        assertThat(created.getTaskStatus().getSlug())
-                .isEqualTo(dto.getStatus());
-
-        assertThat(created.getAssignee().getId())
-                .isEqualTo(dto.getAssigneeId());
+        assertThat(created.getName()).isEqualTo(dto.getName());
+        assertThat(created.getDescription()).isEqualTo(dto.getDescription());
+        assertThat(created.getIndex()).isEqualTo(dto.getIndex());
+        assertThat(created.getTaskStatus().getSlug()).isEqualTo(dto.getStatus());
+        assertThat(created.getAssignee().getId()).isEqualTo(dto.getAssigneeId());
     }
 
     @Test
@@ -225,11 +323,8 @@ class TasksControllerTest {
         var updated = taskRepository.findById(task.getId())
                 .orElseThrow();
 
-        assertThat(updated.getName())
-                .isEqualTo("Updated task");
-
-        assertThat(updated.getDescription())
-                .isEqualTo("Updated description");
+        assertThat(updated.getName()).isEqualTo("Updated task");
+        assertThat(updated.getDescription()).isEqualTo("Updated description");
 
         assertThat(updated.getTaskStatus().getId())
                 .isEqualTo(taskStatus.getId());
@@ -285,5 +380,64 @@ class TasksControllerTest {
                         delete("/api/tasks/{id}", 999999L)
                 )
                 .andExpect(status().isNotFound());
+    }
+
+    private User createAssignee() {
+        var user = Instancio.of(User.class)
+                .ignore(Select.field(User::getId))
+                .ignore(Select.field(User::getCreatedAt))
+                .supply(
+                        Select.field(User::getEmail),
+                        () -> faker.internet().emailAddress()
+                )
+                .supply(
+                        Select.field(User::getPasswordHash),
+                        () -> faker.internet().password()
+                )
+                .create();
+
+        return userRepository.save(user);
+    }
+
+    private TaskStatus createTaskStatus() {
+        var status = Instancio.of(TaskStatus.class)
+                .ignore(Select.field(TaskStatus::getId))
+                .ignore(Select.field(TaskStatus::getCreatedAt))
+                .supply(
+                        Select.field(TaskStatus::getName),
+                        () -> faker.book().title()
+                )
+                .supply(
+                        Select.field(TaskStatus::getSlug),
+                        () -> faker.lorem().word()
+                                + "-"
+                                + faker.number().digits(5)
+                )
+                .create();
+
+        return taskStatusRepository.save(status);
+    }
+
+    private Label createLabel() {
+        var label = Instancio.of(Label.class)
+                .ignore(Select.field(Label::getId))
+                .ignore(Select.field(Label::getCreatedAt))
+                .supply(
+                        Select.field(Label::getName),
+                        () -> faker.lorem().characters(3, 10)
+                )
+                .create();
+
+        return labelRepository.save(label);
+    }
+
+    private Task createTask() {
+        return Instancio.of(Task.class)
+                .ignore(Select.field(Task::getId))
+                .ignore(Select.field(Task::getCreatedAt))
+                .ignore(Select.field(Task::getLabels))
+                .set(Select.field(Task::getTaskStatus), taskStatus)
+                .set(Select.field(Task::getAssignee), assignee)
+                .create();
     }
 }

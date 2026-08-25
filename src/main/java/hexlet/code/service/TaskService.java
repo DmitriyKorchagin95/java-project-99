@@ -2,6 +2,7 @@ package hexlet.code.service;
 
 import hexlet.code.dto.TaskCreateDTO;
 import hexlet.code.dto.TaskDTO;
+import hexlet.code.dto.TaskParamsDTO;
 import hexlet.code.dto.TaskUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskMapper;
@@ -10,9 +11,11 @@ import hexlet.code.model.User;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
-import java.util.List;
+import hexlet.code.specification.TaskSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,8 @@ public class TaskService {
     private final TaskMapper taskMapper;
     private final TaskStatusRepository taskStatusRepository;
     private final TaskRepository taskRepository;
+    private final TaskSpecification taskSpecification;
+
 
     @Transactional
     public TaskDTO create(TaskCreateDTO dto) {
@@ -56,13 +61,21 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskDTO> findAll() {
-        log.debug("Finding all tasks");
+    public Page<TaskDTO> findAll(TaskParamsDTO params, int page, int limit) {
+        log.debug(
+                "Finding tasks: page={}, limit={}, params={}",
+                page,
+                limit,
+                params
+        );
 
-        return taskRepository.findAll()
-                .stream()
-                .map(taskMapper::map)
-                .toList();
+        var specification = taskSpecification.build(params);
+
+        var pageable = PageRequest.of(page - 1, limit);
+
+        return taskRepository
+                .findAll(specification, pageable)
+                .map(taskMapper::map);
     }
 
     @Transactional
