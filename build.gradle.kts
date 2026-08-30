@@ -38,17 +38,15 @@ dependencies {
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 	implementation("net.datafaker:datafaker:2.4.2")
 	implementation("org.instancio:instancio-junit:5.6.0")
-//	implementation("tools.jackson.core:jackson-databind:3.0.0")
 
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.postgresql:postgresql")
+	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.24.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testImplementation("org.springframework.security:spring-security-test")
 	testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.37.0")
-
-
 }
 
 tasks.test {
