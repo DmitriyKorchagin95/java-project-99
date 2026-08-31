@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,15 +42,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
-
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                // NOSONAR: CSRF protection is disabled because the API is stateless and uses JWT tokens
                 .csrf(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+                )
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
@@ -57,15 +58,14 @@ public class SecurityConfig {
                                 "/",
                                 "/index.html",
                                 "/assets/**",
-                                "/api/login"
+                                "/api/login",
+                                "/actuator/**",
+                                "/h2-console/**"
                         ).permitAll()
-                        .anyRequest()
-                        .authenticated()
+                        .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(rs ->
-                        rs.jwt(jwt ->
-                                jwt.decoder(jwtDecoder)
-                        )
+                        rs.jwt(jwt -> jwt.decoder(jwtDecoder))
                 )
                 .build();
     }
