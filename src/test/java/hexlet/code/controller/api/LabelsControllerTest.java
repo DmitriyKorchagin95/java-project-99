@@ -52,10 +52,7 @@ class LabelsControllerTest {
         label = Instancio.of(Label.class)
                 .ignore(Select.field(Label::getId))
                 .ignore(Select.field(Label::getCreatedAt))
-                .supply(
-                        Select.field(Label::getName),
-                        () -> faker.lorem().characters(3, 20)
-                )
+                .set(Select.field(Label::getName), "test-label")
                 .create();
     }
 
