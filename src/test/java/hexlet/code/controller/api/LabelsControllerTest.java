@@ -1,21 +1,10 @@
 package hexlet.code.controller.api;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.LabelCreateDTO;
 import hexlet.code.dto.LabelUpdateDTO;
 import hexlet.code.model.Label;
 import hexlet.code.repository.LabelRepository;
-import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.instancio.Select;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +15,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
@@ -39,9 +39,6 @@ class LabelsControllerTest {
 
     @Autowired
     private LabelRepository labelRepository;
-
-    @Autowired
-    private Faker faker;
 
     private Label label;
 
@@ -69,7 +66,9 @@ class LabelsControllerTest {
 
         var body = result.getResponse().getContentAsString();
 
-        assertThatJson(body).isArray();
+        assertThatJson(body)
+                .isArray()
+                .hasSize(1);
 
         assertThatJson(body)
                 .inPath("$[0].name")
@@ -99,6 +98,10 @@ class LabelsControllerTest {
         assertThatJson(body)
                 .node("createdAt")
                 .isPresent();
+
+        assertThatJson(body)
+                .node("createdAt")
+                .isString();
     }
 
     @Test
@@ -119,7 +122,10 @@ class LabelsControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value(dto.getName()))
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.createdAt").exists());
 
         var created = labelRepository
                 .findByName(dto.getName())
@@ -191,8 +197,6 @@ class LabelsControllerTest {
     void testUpdate() throws Exception {
         label = labelRepository.save(label);
 
-        var oldName = label.getName();
-
         var dto = new LabelUpdateDTO();
         dto.setName(JsonNullable.of("updated label"));
 
@@ -209,9 +213,6 @@ class LabelsControllerTest {
 
         assertThat(updated.getName())
                 .isEqualTo("updated label");
-
-        assertThat(updated.getName())
-                .isNotEqualTo(oldName);
     }
 
     @Test

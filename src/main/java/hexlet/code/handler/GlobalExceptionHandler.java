@@ -1,6 +1,6 @@
 package hexlet.code.handler;
 
-import hexlet.code.exception.EntityInUseException;
+import hexlet.code.exception.ConflictException;
 import hexlet.code.exception.ResourceNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -23,8 +23,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(EntityInUseException.class)
-    public ResponseEntity<String> handleEntityInUseException(EntityInUseException ex) {
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<String> handleEntityInUseException(ConflictException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 }

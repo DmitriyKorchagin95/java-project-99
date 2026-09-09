@@ -3,7 +3,7 @@ package hexlet.code.service;
 import hexlet.code.dto.TaskStatusCreateDTO;
 import hexlet.code.dto.TaskStatusDTO;
 import hexlet.code.dto.TaskStatusUpdateDTO;
-import hexlet.code.exception.EntityInUseException;
+import hexlet.code.exception.ConflictException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskStatusMapper;
 import hexlet.code.model.TaskStatus;
@@ -80,7 +80,7 @@ public class TaskStatusService {
                         ));
 
         if (taskRepository.existsByTaskStatus(taskStatus)) {
-            throw new EntityInUseException("Task status is used by tasks");
+            throw new ConflictException("Task status is used by tasks");
         }
 
         taskStatusRepository.delete(taskStatus);

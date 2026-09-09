@@ -3,7 +3,7 @@ package hexlet.code.service;
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.dto.UserDTO;
 import hexlet.code.dto.UserUpdateDTO;
-import hexlet.code.exception.EntityInUseException;
+import hexlet.code.exception.ConflictException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
@@ -101,7 +101,7 @@ public class UserService implements UserDetailsService {
                         ));
 
         if (taskRepository.existsByAssignee(user)) {
-            throw new EntityInUseException("User has assigned tasks");
+            throw new ConflictException("User has assigned tasks");
         }
 
         userRepository.delete(user);
