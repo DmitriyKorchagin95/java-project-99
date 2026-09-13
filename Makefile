@@ -1,6 +1,9 @@
 setup:
 	./gradlew clean build
 
+build:
+	./gradlew build
+
 app:
 	./gradlew bootRun --args='--spring.profiles.active=production'
 
@@ -10,4 +13,7 @@ lint:
 test:
 	./gradlew test
 
-.PHONY: setup app clean build lint test
+clean:
+	./gradlew clean
+
+.PHONY: setup build app lint test clean
