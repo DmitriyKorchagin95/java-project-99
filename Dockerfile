@@ -1,19 +1,31 @@
-FROM gradle:9.1.0-jdk21 AS builder
+FROM eclipse-temurin:21-jdk-noble AS builder
+
+RUN apt-get update && apt-get install -yq --no-install-recommends make unzip && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY . .
+COPY gradle gradle
+COPY gradle.properties .
+COPY build.gradle.kts .
+COPY settings.gradle.kts .
+COPY gradlew .
+RUN ./gradlew --no-daemon dependencies
 
-RUN ./gradlew clean build --no-daemon
+COPY lombok.config .
+COPY src src
 
-FROM eclipse-temurin:21-jre
+RUN ./gradlew --no-daemon build
 
+FROM eclipse-temurin:21-jre-noble
 WORKDIR /app
 
-COPY --from=builder /app/build/libs/*.jar app.jar
+RUN groupadd --system springgroup && useradd --system -g springgroup springuser
 
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+COPY --from=builder --chown=springuser:springgroup "/app/build/libs/Task Manager-0.0.1-SNAPSHOT.jar" app.jar
 
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=50.0"
 EXPOSE 8080
 
-CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar --spring.profiles.active=production"]
+USER springuser
+
+CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
