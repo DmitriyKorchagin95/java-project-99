@@ -37,4 +37,4 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=60.0 -XX:InitialRAM
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar --spring.profiles.active=production"]
+CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar --spring.profiles.active=development"]
