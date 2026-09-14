@@ -21,7 +21,7 @@ WORKDIR /app
 
 RUN groupadd --system springgroup && useradd --system -g springgroup springuser
 
-COPY --from=builder --chown=springuser:springgroup "/app/build/libs/Task Manager-0.0.1-SNAPSHOT.jar" app.jar
+COPY --from=builder --chown=springuser:springgroup "/app/build/libs/app-0.0.1-SNAPSHOT.jar" app.jar
 
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=50.0"
 EXPOSE 8080

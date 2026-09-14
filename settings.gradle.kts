@@ -1,4 +1,4 @@
-rootProject.name = "Task Manager"
+rootProject.name = "app"
 
 pluginManagement {
     repositories {
