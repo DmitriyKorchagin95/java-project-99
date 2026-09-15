@@ -1,13 +1,14 @@
 spring:
-profiles: development
-datasource:
-  url: jdbc:h2:file:./data/devdb;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE
-  username: sa
-  password:
-  driver-class-name: org.h2.Driver
+  datasource:
+    url: jdbc:h2:mem:devdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
   h2:
     console:
-      enable: true
-jpa:
-  hibernate:
-  ddl-auto: update
+      enabled: true
+debug: true
+logging:
+  level:
+    root: DEBUG
+    org.springframework.web: DEBUG
+    org.apache.coyote.http11: DEBUG
