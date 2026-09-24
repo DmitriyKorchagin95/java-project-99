@@ -1,8 +1,8 @@
 package hexlet.code.mapper;
 
-import hexlet.code.dto.TaskCreateDTO;
-import hexlet.code.dto.TaskDTO;
-import hexlet.code.dto.TaskUpdateDTO;
+import hexlet.code.dto.task.TaskCreateDTO;
+import hexlet.code.dto.task.TaskDTO;
+import hexlet.code.dto.task.TaskUpdateDTO;
 import hexlet.code.model.Task;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,12 +19,20 @@ import org.mapstruct.ReportingPolicy;
 )
 public abstract class TaskMapper {
 
-    @Mapping(target = "status", source = "taskStatus.slug")
+    @Mapping(target = "taskStatus", source = "taskStatus.slug")
     @Mapping(target = "assigneeId", source = "assignee.id")
     public abstract TaskDTO map(Task task);
 
+    @Mapping(target = "taskStatus", ignore = true)
+    @Mapping(target = "assignee", ignore = true)
+    @Mapping(target = "labels", ignore = true)
     public abstract Task map(TaskCreateDTO dto);
 
-    public abstract void update(TaskUpdateDTO dto,
-                                @MappingTarget Task task);
+    @Mapping(target = "taskStatus", ignore = true)
+    @Mapping(target = "assignee", ignore = true)
+    @Mapping(target = "labels", ignore = true)
+    public abstract void update(
+            TaskUpdateDTO dto,
+            @MappingTarget Task task
+    );
 }

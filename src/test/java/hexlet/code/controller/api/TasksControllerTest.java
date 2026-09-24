@@ -11,8 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hexlet.code.dto.TaskCreateDTO;
-import hexlet.code.dto.TaskUpdateDTO;
+import hexlet.code.dto.task.TaskCreateDTO;
+import hexlet.code.dto.task.TaskUpdateDTO;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
@@ -91,7 +91,7 @@ class TasksControllerTest {
 
         assertThatJson(body).isArray();
         assertThatJson(body)
-                .inPath("$[0].name")
+                .inPath("$[0].title")
                 .isEqualTo(task.getName());
     }
 
@@ -115,7 +115,7 @@ class TasksControllerTest {
 
         assertThatJson(body).isArray();
         assertThatJson(body)
-                .inPath("$[0].name")
+                .inPath("$[0].title")
                 .isEqualTo(task.getName());
     }
 
@@ -125,7 +125,10 @@ class TasksControllerTest {
 
         var result = mockMvc.perform(
                         get("/api/tasks")
-                                .param("assigneeId", assignee.getId().toString())
+                                .param(
+                                        "assigneeId",
+                                        assignee.getId().toString()
+                                )
                 )
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Total-Count", "1"))
@@ -135,7 +138,7 @@ class TasksControllerTest {
 
         assertThatJson(body).isArray();
         assertThatJson(body)
-                .inPath("$[0].name")
+                .inPath("$[0].title")
                 .isEqualTo(task.getName());
     }
 
@@ -155,7 +158,7 @@ class TasksControllerTest {
 
         assertThatJson(body).isArray();
         assertThatJson(body)
-                .inPath("$[0].name")
+                .inPath("$[0].title")
                 .isEqualTo(task.getName());
     }
 
@@ -178,7 +181,7 @@ class TasksControllerTest {
 
         assertThatJson(body).isArray();
         assertThatJson(body)
-                .inPath("$[0].name")
+                .inPath("$[0].title")
                 .isEqualTo(task.getName());
     }
 
@@ -191,10 +194,19 @@ class TasksControllerTest {
 
         var result = mockMvc.perform(
                         get("/api/tasks")
-                                .param("titleCont", task.getName().substring(0, 3))
-                                .param("assigneeId", assignee.getId().toString())
+                                .param(
+                                        "titleCont",
+                                        task.getName().substring(0, 3)
+                                )
+                                .param(
+                                        "assigneeId",
+                                        assignee.getId().toString()
+                                )
                                 .param("status", taskStatus.getSlug())
-                                .param("labelId", label.getId().toString())
+                                .param(
+                                        "labelId",
+                                        label.getId().toString()
+                                )
                 )
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Total-Count", "1"))
@@ -204,7 +216,7 @@ class TasksControllerTest {
 
         assertThatJson(body).isArray();
         assertThatJson(body)
-                .inPath("$[0].name")
+                .inPath("$[0].title")
                 .isEqualTo(task.getName());
     }
 
@@ -243,11 +255,11 @@ class TasksControllerTest {
         var body = result.getResponse().getContentAsString();
 
         assertThatJson(body)
-                .inPath("name")
+                .inPath("title")
                 .isEqualTo(task.getName());
 
         assertThatJson(body)
-                .inPath("description")
+                .inPath("content")
                 .isEqualTo(task.getDescription());
 
         assertThatJson(body)
@@ -255,8 +267,12 @@ class TasksControllerTest {
                 .isEqualTo(taskStatus.getSlug());
 
         assertThatJson(body)
-                .inPath("assigneeId")
+                .inPath("assignee_id")
                 .isEqualTo(assignee.getId());
+
+        assertThatJson(body)
+                .inPath("createdAt")
+                .isString();
     }
 
     @Test
@@ -272,7 +288,7 @@ class TasksControllerTest {
         dto.setName("Test task");
         dto.setDescription("Task description");
         dto.setIndex(100L);
-        dto.setStatus(taskStatus.getSlug());
+        dto.setTaskStatus(taskStatus.getSlug());
         dto.setAssigneeId(assignee.getId());
 
         mockMvc.perform(
@@ -282,14 +298,20 @@ class TasksControllerTest {
                 )
                 .andExpect(status().isCreated());
 
-        var created = taskRepository.findAll().getFirst();
+        var created = taskRepository.findAll().stream()
+                .filter(savedTask -> savedTask.getName().equals("Test task"))
+                .findFirst()
+                .orElseThrow();
 
         assertNotNull(created);
         assertThat(created.getName()).isEqualTo(dto.getName());
-        assertThat(created.getDescription()).isEqualTo(dto.getDescription());
+        assertThat(created.getDescription())
+                .isEqualTo(dto.getDescription());
         assertThat(created.getIndex()).isEqualTo(dto.getIndex());
-        assertThat(created.getTaskStatus().getSlug()).isEqualTo(dto.getStatus());
-        assertThat(created.getAssignee().getId()).isEqualTo(dto.getAssigneeId());
+        assertThat(created.getTaskStatus().getSlug())
+                .isEqualTo(dto.getTaskStatus());
+        assertThat(created.getAssignee().getId())
+                .isEqualTo(dto.getAssigneeId());
     }
 
     @Test
@@ -297,7 +319,7 @@ class TasksControllerTest {
         var dto = new TaskCreateDTO();
 
         dto.setName("");
-        dto.setStatus(taskStatus.getSlug());
+        dto.setTaskStatus(taskStatus.getSlug());
 
         mockMvc.perform(
                         post("/api/tasks")
@@ -325,8 +347,11 @@ class TasksControllerTest {
         var updated = taskRepository.findById(task.getId())
                 .orElseThrow();
 
-        assertThat(updated.getName()).isEqualTo("Updated task");
-        assertThat(updated.getDescription()).isEqualTo("Updated description");
+        assertThat(updated.getName())
+                .isEqualTo("Updated task");
+
+        assertThat(updated.getDescription())
+                .isEqualTo("Updated description");
 
         assertThat(updated.getTaskStatus().getId())
                 .isEqualTo(taskStatus.getId());

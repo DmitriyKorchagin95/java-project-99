@@ -1,7 +1,7 @@
 package hexlet.code.conroller;
 
-import hexlet.code.dto.TaskStatusCreateDTO;
-import hexlet.code.dto.TaskStatusUpdateDTO;
+import hexlet.code.dto.status.TaskStatusCreateDTO;
+import hexlet.code.dto.status.TaskStatusUpdateDTO;
 import hexlet.code.service.TaskStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

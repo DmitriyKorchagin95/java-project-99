@@ -1,7 +1,7 @@
 package hexlet.code.conroller;
 
-import hexlet.code.dto.LabelCreateDTO;
-import hexlet.code.dto.LabelUpdateDTO;
+import hexlet.code.dto.label.LabelCreateDTO;
+import hexlet.code.dto.label.LabelUpdateDTO;
 import hexlet.code.service.LabelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

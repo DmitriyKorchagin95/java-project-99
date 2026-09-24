@@ -1,4 +1,4 @@
-package hexlet.code.dto;
+package hexlet.code.dto.label;
 
 import java.time.Instant;
 import lombok.Getter;
@@ -6,12 +6,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TaskDTO {
+public class LabelDTO {
     private Long id;
     private String name;
-    private Long index;
-    private String description;
-    private Long assigneeId;
-    private String status;
     private Instant createdAt;
 }
