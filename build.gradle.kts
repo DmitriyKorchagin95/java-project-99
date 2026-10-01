@@ -2,11 +2,10 @@ plugins {
 	application
 	jacoco
 	checkstyle
-	id("com.gradleup.shadow") version "9.4.2"
 	id("com.github.ben-manes.versions") version "0.52.0"
-	id("com.diffplug.spotless") version "8.6.0"
-	id("org.sonarqube") version "7.3.0.8198"
-	id("io.freefair.lombok") version "8.6"
+	id("com.diffplug.spotless") version "7.0.2"
+	id("org.sonarqube") version "5.0.0.4638"
+	id("io.freefair.lombok") version "8.12.2"
 	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
 }
@@ -33,20 +32,21 @@ dependencies {
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
-	implementation("org.mapstruct:mapstruct:1.6.3")
-	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
-	implementation("net.datafaker:datafaker:2.4.2")
-	implementation("org.instancio:instancio-junit:5.6.0")
 
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.postgresql:postgresql")
-	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.24.0")
+
+	implementation("org.openapitools:jackson-databind-nullable:_")
+	implementation("org.mapstruct:mapstruct:_")
+	annotationProcessor("org.mapstruct:mapstruct-processor:_")
+	implementation("net.datafaker:datafaker:_")
+	implementation("org.instancio:instancio-junit:_")
+	implementation("io.sentry:sentry-spring-boot-starter-jakarta:_")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testImplementation("org.springframework.security:spring-security-test")
-	testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.37.0")
+	testImplementation("net.javacrumbs.json-unit:json-unit-assertj:_")
 }
 
 tasks.test {
