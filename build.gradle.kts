@@ -60,6 +60,10 @@ tasks.jacocoTestReport {
     }
 }
 
+tasks.bootJar {
+    archiveFileName.set("app.jar")
+}
+
 sonar {
     properties {
         property("sonar.projectKey", "DmitriyKorchagin95_java-project-99")
