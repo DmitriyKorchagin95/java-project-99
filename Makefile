@@ -4,8 +4,8 @@ setup:
 build:
 	./gradlew build
 
-app:
-	./gradlew bootRun --args='--spring.profiles.active=production'
+start:
+	./gradlew bootRun --args='--spring.profiles.active=development'
 
 lint:
 	./gradlew spotlessApply
@@ -16,4 +16,4 @@ test:
 clean:
 	./gradlew clean
 
-.PHONY: setup build app lint test clean
+.PHONY: setup build start app lint test clean
