@@ -42,7 +42,4 @@ out/
 node_modules
 
 .env
-
-src/main/resources/static
-!src/main/resources/static/.gitkeep
 npm-cache
