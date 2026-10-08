@@ -7,8 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TaskStatusCreateDTO {
-
-    @NotBlank private String name;
-
-    @NotBlank private String slug;
+    @NotBlank
+    private String name;
+    @NotBlank
+    private String slug;
 }

@@ -1,15 +1,5 @@
 package hexlet.code.controller.api;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.task.TaskCreateDTO;
 import hexlet.code.dto.task.TaskUpdateDTO;
@@ -21,7 +11,6 @@ import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
-import java.util.Set;
 import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.instancio.Select;
@@ -34,6 +23,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Set;
+
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -338,7 +339,7 @@ class TasksControllerTest {
         dto.setDescription(JsonNullable.of("Updated description"));
 
         mockMvc.perform(
-                        patch("/api/tasks/{id}", task.getId())
+                        put("/api/tasks/{id}", task.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
@@ -368,7 +369,7 @@ class TasksControllerTest {
         dto.setName(JsonNullable.of(""));
 
         mockMvc.perform(
-                        patch("/api/tasks/{id}", task.getId())
+                        put("/api/tasks/{id}", task.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
@@ -381,7 +382,7 @@ class TasksControllerTest {
         dto.setName(JsonNullable.of("Updated"));
 
         mockMvc.perform(
-                        patch("/api/tasks/{id}", 999999L)
+                        put("/api/tasks/{id}", 999999L)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )

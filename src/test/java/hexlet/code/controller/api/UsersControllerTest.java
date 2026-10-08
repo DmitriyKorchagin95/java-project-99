@@ -1,14 +1,5 @@
 package hexlet.code.controller.api;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.user.UserCreateDTO;
 import hexlet.code.dto.user.UserUpdateDTO;
@@ -27,6 +18,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -143,7 +143,7 @@ class UsersControllerTest {
         var dto = buildUpdateDto(JsonNullable.of("updated@email.com"));
 
         mockMvc.perform(
-                        patch(BASE_URL + "/{id}", testUser.getId())
+                        put(BASE_URL + "/{id}", testUser.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
@@ -165,7 +165,7 @@ class UsersControllerTest {
         var dto = buildUpdateDto(JsonNullable.of("not-email"));
 
         mockMvc.perform(
-                        patch(BASE_URL + "/{id}", testUser.getId())
+                        put(BASE_URL + "/{id}", testUser.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )

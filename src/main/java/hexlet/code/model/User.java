@@ -9,9 +9,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +20,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -32,7 +33,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "users")
 public class User implements BaseEntity, UserDetails {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include

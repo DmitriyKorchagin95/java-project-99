@@ -3,14 +3,12 @@ package hexlet.code.service;
 import hexlet.code.dto.user.UserCreateDTO;
 import hexlet.code.dto.user.UserDTO;
 import hexlet.code.dto.user.UserUpdateDTO;
-import hexlet.code.exception.ConflictException;
+import hexlet.code.exception.ResourceAlreadyExistsException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,11 +18,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
-
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -101,7 +101,7 @@ public class UserService implements UserDetailsService {
                         ));
 
         if (taskRepository.existsByAssignee(user)) {
-            throw new ConflictException("User has assigned tasks");
+            throw new ResourceAlreadyExistsException("User has assigned tasks");
         }
 
         userRepository.delete(user);

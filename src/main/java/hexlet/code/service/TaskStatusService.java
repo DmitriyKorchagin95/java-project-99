@@ -3,24 +3,24 @@ package hexlet.code.service;
 import hexlet.code.dto.status.TaskStatusCreateDTO;
 import hexlet.code.dto.status.TaskStatusDTO;
 import hexlet.code.dto.status.TaskStatusUpdateDTO;
-import hexlet.code.exception.ConflictException;
+import hexlet.code.exception.ResourceAlreadyExistsException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskStatusMapper;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class TaskStatusService {
-
     private final TaskStatusRepository taskStatusRepository;
     private final TaskStatusMapper taskStatusMapper;
     private final TaskRepository taskRepository;
@@ -80,7 +80,7 @@ public class TaskStatusService {
                         ));
 
         if (taskRepository.existsByTaskStatus(taskStatus)) {
-            throw new ConflictException("Task status is used by tasks");
+            throw new ResourceAlreadyExistsException("Task status is used by tasks");
         }
 
         taskStatusRepository.delete(taskStatus);

@@ -1,14 +1,5 @@
 package hexlet.code.controller.api;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.status.TaskStatusCreateDTO;
 import hexlet.code.dto.status.TaskStatusUpdateDTO;
@@ -26,6 +17,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -202,7 +202,7 @@ class TaskStatusesControllerTest {
                 JsonNullable.undefined());
 
         mockMvc.perform(
-                        patch(BASE_URL + "/{id}", taskStatus.getId())
+                        put(BASE_URL + "/{id}", taskStatus.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto)))
                 .andExpect(status().isOk());
@@ -224,7 +224,7 @@ class TaskStatusesControllerTest {
                 JsonNullable.undefined());
 
         mockMvc.perform(
-                        patch(BASE_URL + "/{id}", taskStatus.getId())
+                        put(BASE_URL + "/{id}", taskStatus.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest());
@@ -238,7 +238,7 @@ class TaskStatusesControllerTest {
                 JsonNullable.undefined());
 
         mockMvc.perform(
-                        patch(BASE_URL + "/{id}", 999999L)
+                        put(BASE_URL + "/{id}", 999999L)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto)))
                 .andExpect(status().isNotFound());

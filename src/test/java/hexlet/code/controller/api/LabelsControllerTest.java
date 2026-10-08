@@ -1,16 +1,5 @@
 package hexlet.code.controller.api;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.label.LabelCreateDTO;
 import hexlet.code.dto.label.LabelUpdateDTO;
@@ -27,6 +16,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -203,7 +203,7 @@ class LabelsControllerTest {
         dto.setName(JsonNullable.of("updated label"));
 
         mockMvc.perform(
-                        patch("/api/labels/{id}", label.getId())
+                        put("/api/labels/{id}", label.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
@@ -225,7 +225,7 @@ class LabelsControllerTest {
         dto.setName(JsonNullable.of("ab"));
 
         mockMvc.perform(
-                        patch("/api/labels/{id}", label.getId())
+                        put("/api/labels/{id}", label.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
@@ -238,7 +238,7 @@ class LabelsControllerTest {
         dto.setName(JsonNullable.of("updated label"));
 
         mockMvc.perform(
-                        patch("/api/labels/{id}", 999999L)
+                        put("/api/labels/{id}", 999999L)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
@@ -264,7 +264,7 @@ class LabelsControllerTest {
         dto.setName(JsonNullable.of(label.getName()));
 
         mockMvc.perform(
-                        patch("/api/labels/{id}", anotherLabel.getId())
+                        put("/api/labels/{id}", anotherLabel.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )

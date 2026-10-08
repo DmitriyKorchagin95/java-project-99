@@ -3,21 +3,21 @@ package hexlet.code.service;
 import hexlet.code.dto.label.LabelCreateDTO;
 import hexlet.code.dto.label.LabelDTO;
 import hexlet.code.dto.label.LabelUpdateDTO;
-import hexlet.code.exception.ConflictException;
+import hexlet.code.exception.ResourceAlreadyExistsException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.LabelMapper;
 import hexlet.code.repository.LabelRepository;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class LabelService {
-
     private final LabelRepository labelRepository;
     private final LabelMapper labelMapper;
 
@@ -90,7 +90,7 @@ public class LabelService {
                         ));
 
         if (!label.getTasks().isEmpty()) {
-            throw new ConflictException(
+            throw new ResourceAlreadyExistsException(
                     String.format(
                             "Label with id %d is used by tasks",
                             id

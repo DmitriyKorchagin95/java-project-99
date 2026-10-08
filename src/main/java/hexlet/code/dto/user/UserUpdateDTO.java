@@ -11,12 +11,12 @@ import org.openapitools.jackson.nullable.JsonNullable;
 @Getter
 @Setter
 public class UserUpdateDTO {
-
-    @NotNull private JsonNullable<@Email @NotBlank String> email = JsonNullable.undefined();
-
-    @NotNull private JsonNullable<@NotBlank String> firstName = JsonNullable.undefined();
-
-    @NotNull private JsonNullable<@NotBlank String> lastName = JsonNullable.undefined();
-
-    @NotNull private JsonNullable<@NotBlank @Size(min = 3) String> password = JsonNullable.undefined();
+    @NotNull
+    private JsonNullable<@Email @NotBlank String> email = JsonNullable.undefined();
+    @NotNull
+    private JsonNullable<@NotBlank String> firstName = JsonNullable.undefined();
+    @NotNull
+    private JsonNullable<@NotBlank String> lastName = JsonNullable.undefined();
+    @NotNull
+    private JsonNullable<@NotBlank @Size(min = 3) String> password = JsonNullable.undefined();
 }

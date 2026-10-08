@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
