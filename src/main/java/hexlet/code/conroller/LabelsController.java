@@ -1,13 +1,14 @@
-package hexlet.code.conroller;
+package hexlet.code.controller;
 
 import hexlet.code.dto.label.LabelCreateDTO;
+import hexlet.code.dto.label.LabelDTO;
 import hexlet.code.dto.label.LabelUpdateDTO;
 import hexlet.code.service.LabelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/labels")
 @RequiredArgsConstructor
@@ -25,49 +28,41 @@ public class LabelsController {
     private final LabelService labelService;
 
     @GetMapping
-    public ResponseEntity<?> index() {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<LabelDTO>> index() {
         var labels = labelService.findAll();
-        var totalCount = labels.size();
-        var headers = new HttpHeaders();
-        headers.add("X-Total-Count", String.valueOf(totalCount));
-
-        return new ResponseEntity<>(labels, headers, HttpStatus.OK);
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(labels.size()))
+                .body(labels);
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody LabelCreateDTO labelData) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<LabelDTO> create(@Valid @RequestBody LabelCreateDTO labelData) {
         var label = labelService.create(labelData);
-
-        return new ResponseEntity<>(
-                label,
-                HttpStatus.CREATED
-        );
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(label);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> show(@PathVariable Long id) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<LabelDTO> show(@PathVariable Long id) {
         var label = labelService.findById(id);
-
-        return new ResponseEntity<>(
-                label,
-                HttpStatus.OK
-        );
+        return ResponseEntity.ok(label);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@Valid @RequestBody LabelUpdateDTO labelData, @PathVariable Long id) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<LabelDTO> update(@Valid @RequestBody LabelUpdateDTO labelData, @PathVariable Long id) {
         var label = labelService.update(id, labelData);
-
-        return new ResponseEntity<>(
-                label,
-                HttpStatus.OK
-        );
+        return ResponseEntity.ok(label);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         labelService.delete(id);
-
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 }

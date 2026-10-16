@@ -12,9 +12,11 @@ import hexlet.code.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("!test")
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationRunner {
     private static final String ADMIN_EMAIL = "hexlet@example.com";

@@ -23,7 +23,13 @@ public class LabelService {
 
     @Transactional
     public LabelDTO create(LabelCreateDTO dto) {
-        log.info("Creating label");
+        log.info("Creating label with name={}", dto.getName());
+
+        if (labelRepository.existsByName(dto.getName())) {
+            throw new ResourceAlreadyExistsException(
+                    String.format("Label with name %s already exists", dto.getName())
+            );
+        }
 
         var label = labelMapper.map(dto);
         var savedLabel = labelRepository.save(label);
@@ -37,21 +43,16 @@ public class LabelService {
 
         return labelRepository.findById(id)
                 .map(labelMapper::map)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                String.format(
-                                        "Label with id %d not found",
-                                        id
-                                )
-                        ));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Label with id %d not found", id)
+                ));
     }
 
     @Transactional(readOnly = true)
     public List<LabelDTO> findAll() {
         log.debug("Finding all labels");
 
-        return labelRepository.findAll()
-                .stream()
+        return labelRepository.findAll().stream()
                 .map(labelMapper::map)
                 .toList();
     }
@@ -61,16 +62,18 @@ public class LabelService {
         log.info("Updating label id={}", id);
 
         var label = labelRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                String.format(
-                                        "Label with id %d not found",
-                                        id
-                                )
-                        ));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Label with id %d not found", id)
+                ));
+
+        if (dto.getName().isPresent() && !label.getName().equals(dto.getName().get())
+                && labelRepository.existsByName(dto.getName().get())) {
+            throw new ResourceAlreadyExistsException(
+                    String.format("Label with name %s already exists", dto.getName().get())
+            );
+        }
 
         labelMapper.update(dto, label);
-
         var updatedLabel = labelRepository.save(label);
 
         return labelMapper.map(updatedLabel);
@@ -81,20 +84,13 @@ public class LabelService {
         log.info("Deleting label id={}", id);
 
         var label = labelRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                String.format(
-                                        "Label with id %d not found",
-                                        id
-                                )
-                        ));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Label with id %d not found", id)
+                ));
 
-        if (!label.getTasks().isEmpty()) {
+        if (label.getTasks() != null && !label.getTasks().isEmpty()) {
             throw new ResourceAlreadyExistsException(
-                    String.format(
-                            "Label with id %d is used by tasks",
-                            id
-                    )
+                    String.format("Label with id %d is used by tasks", id)
             );
         }
 

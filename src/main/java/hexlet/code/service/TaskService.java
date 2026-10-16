@@ -38,14 +38,9 @@ public class TaskService {
 
     @Transactional
     public TaskDTO create(TaskCreateDTO dto) {
-        log.info(
-                "Creating task: name='{}', status='{}'",
-                dto.getName(),
-                dto.getTaskStatus()
-        );
+        log.info("Creating task: name='{}', status='{}'", dto.getName(), dto.getTaskStatus());
 
         var task = taskMapper.map(dto);
-
         task.setTaskStatus(getTaskStatus(dto.getTaskStatus()));
 
         if (dto.getAssigneeId() != null) {
@@ -57,7 +52,6 @@ public class TaskService {
         }
 
         var savedTask = taskRepository.save(task);
-
         log.info("Task created: id={}", savedTask.getId());
 
         return taskMapper.map(savedTask);
@@ -69,46 +63,20 @@ public class TaskService {
 
         return taskRepository.findById(id)
                 .map(taskMapper::map)
-                .orElseThrow(() -> {
-                    log.warn("Task not found: id={}", id);
-
-                    return new ResourceNotFoundException(
-                            String.format(
-                                    "Task with id %d not found",
-                                    id
-                            )
-                    );
-                });
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Task with id %d not found", id)
+                ));
     }
 
     @Transactional(readOnly = true)
-    public Page<TaskDTO> findAll(
-            TaskParamsDTO params,
-            int page,
-            int limit
-    ) {
-        log.debug(
-                "Finding tasks: page={}, limit={}, params={}",
-                page,
-                limit,
-                params
-        );
+    public Page<TaskDTO> findAll(TaskParamsDTO params, int page, int limit) {
+        log.debug("Finding tasks: page={}, limit={}, params={}", page, limit, params);
 
         var specification = taskSpecification.build(params);
         var pageable = PageRequest.of(page - 1, limit);
 
-        var result = taskRepository
-                .findAll(specification, pageable)
+        return taskRepository.findAll(specification, pageable)
                 .map(taskMapper::map);
-
-        log.debug(
-                "Found tasks: page={}, count={}, total={}",
-                page,
-                result.getNumberOfElements(),
-                result.getTotalElements()
-        );
-
-        return result;
     }
 
     @Transactional
@@ -116,16 +84,9 @@ public class TaskService {
         log.info("Updating task: id={}", id);
 
         var task = taskRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Task not found for update: id={}", id);
-
-                    return new ResourceNotFoundException(
-                            String.format(
-                                    "Task with id %d not found",
-                                    id
-                            )
-                    );
-                });
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Task with id %d not found", id)
+                ));
 
         taskMapper.update(dto, task);
 
@@ -133,9 +94,8 @@ public class TaskService {
         updateAssignee(dto, task);
         updateLabels(dto, task);
 
-        log.info("Task updated: id={}", id);
-
-        return taskMapper.map(task);
+        var updatedTask = taskRepository.save(task);
+        return taskMapper.map(updatedTask);
     }
 
     @Transactional
@@ -143,27 +103,17 @@ public class TaskService {
         log.info("Deleting task: id={}", id);
 
         var task = taskRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Task not found for deletion: id={}", id);
-
-                    return new ResourceNotFoundException(
-                            String.format(
-                                    "Task with id %d not found",
-                                    id
-                            )
-                    );
-                });
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Task with id %d not found", id)
+                ));
 
         taskRepository.delete(task);
-
         log.info("Task deleted: id={}", id);
     }
 
     private void updateStatus(TaskUpdateDTO dto, Task task) {
         if (dto.getTaskStatus().isPresent()) {
-            task.setTaskStatus(
-                    getTaskStatus(dto.getTaskStatus().get())
-            );
+            task.setTaskStatus(getTaskStatus(dto.getTaskStatus().get()));
         }
     }
 
@@ -173,7 +123,6 @@ public class TaskService {
         }
 
         var assigneeId = dto.getAssigneeId().orElse(null);
-
         if (assigneeId == null) {
             task.setAssignee(null);
             return;
@@ -186,57 +135,28 @@ public class TaskService {
         if (!dto.getTaskLabelIds().isPresent()) {
             return;
         }
-
-        task.setLabels(
-                getLabels(dto.getTaskLabelIds().get())
-        );
+        task.setLabels(getLabels(dto.getTaskLabelIds().get()));
     }
 
     private HashSet<Label> getLabels(Set<Long> ids) {
-        var labels = new HashSet<>(
-                labelRepository.findAllById(ids)
-        );
-
+        var labels = new HashSet<>(labelRepository.findAllById(ids));
         if (labels.size() != ids.size()) {
-            throw new ResourceNotFoundException(
-                    "One or more labels not found"
-            );
+            throw new ResourceNotFoundException("One or more labels not found");
         }
-
         return labels;
     }
 
     private TaskStatus getTaskStatus(String slug) {
         return taskStatusRepository.findBySlug(slug)
-                .orElseThrow(() -> {
-                    log.warn(
-                            "Task status not found: slug={}",
-                            slug
-                    );
-
-                    return new ResourceNotFoundException(
-                            String.format(
-                                    "Task status with slug '%s' not found",
-                                    slug
-                            )
-                    );
-                });
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Task status with slug '%s' not found", slug)
+                ));
     }
 
     private User getUser(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn(
-                            "User not found: id={}",
-                            id
-                    );
-
-                    return new ResourceNotFoundException(
-                            String.format(
-                                    "User with id %d not found",
-                                    id
-                            )
-                    );
-                });
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("User with id %d not found", id)
+                ));
     }
 }

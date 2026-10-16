@@ -6,7 +6,6 @@ import hexlet.code.dto.user.UserUpdateDTO;
 import hexlet.code.exception.ResourceAlreadyExistsException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
-import hexlet.code.model.User;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +18,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -34,14 +33,16 @@ public class UserService implements UserDetailsService {
     public UserDTO create(UserCreateDTO dto) {
         log.info("Creating user with email={}", dto.getEmail());
 
-        var user = userMapper.map(dto);
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new ResourceAlreadyExistsException(
+                    String.format("User with email %s already exists", dto.getEmail())
+            );
+        }
 
-        user.setPasswordHash(
-                passwordEncoder.encode(dto.getPassword())
-        );
+        var user = userMapper.map(dto);
+        user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
 
         var savedUser = userRepository.save(user);
-
         return userMapper.map(savedUser);
     }
 
@@ -51,18 +52,16 @@ public class UserService implements UserDetailsService {
 
         return userRepository.findById(id)
                 .map(userMapper::map)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                String.format("User with id %d not found", id)
-                        ));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("User with id %d not found", id)
+                ));
     }
 
     @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
         log.debug("Finding all users");
 
-        return userRepository.findAll()
-                .stream()
+        return userRepository.findAll().stream()
                 .map(userMapper::map)
                 .toList();
     }
@@ -72,10 +71,9 @@ public class UserService implements UserDetailsService {
         log.info("Updating user id={}", id);
 
         var user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                String.format("User with id %d not found", id)
-                        ));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("User with id %d not found", id)
+                ));
 
         userMapper.update(dto, user);
 
@@ -86,7 +84,6 @@ public class UserService implements UserDetailsService {
         }
 
         var updatedUser = userRepository.save(user);
-
         return userMapper.map(updatedUser);
     }
 
@@ -95,32 +92,25 @@ public class UserService implements UserDetailsService {
         log.info("Deleting user id={}", id);
 
         var user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                String.format("User with id %d not found", id)
-                        ));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("User with id %d not found", id)
+                ));
 
         if (taskRepository.existsByAssignee(user)) {
-            throw new ResourceAlreadyExistsException("User has assigned tasks");
+            throw new ResourceAlreadyExistsException("Cannot delete user: user has assigned tasks");
         }
 
         userRepository.delete(user);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<User> getById(Long id) {
-        return userRepository.findById(id);
-    }
-
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String email)
-            throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        log.debug("Loading user by email={}", email);
 
         return userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(
-                                String.format("User with email %s not found", email)
-                        ));
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        String.format("User with email %s not found", email)
+                ));
     }
 }

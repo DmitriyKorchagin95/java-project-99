@@ -1,13 +1,14 @@
-package hexlet.code.controller.api;
+package hexlet.code.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.user.UserCreateDTO;
 import hexlet.code.dto.user.UserUpdateDTO;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.util.ModelGenerator;
 import net.datafaker.Faker;
+import org.hamcrest.Matchers;
 import org.instancio.Instancio;
-import org.instancio.Select;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullable;
@@ -16,24 +17,27 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.transaction.annotation.Transactional;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
+@Transactional
 class UsersControllerTest {
-
-    private static final String BASE_URL = "/api/users";
 
     @Autowired
     private MockMvc mockMvc;
@@ -50,36 +54,46 @@ class UsersControllerTest {
     @Autowired
     private Faker faker;
 
+    @Autowired
+    private ModelGenerator modelGenerator;
+
     private User testUser;
+    private JwtRequestPostProcessor token;
 
     @BeforeEach
     void setUp() {
-        userRepository.deleteAll();
-        testUser = buildUser();
+        testUser = Instancio.of(modelGenerator.getUserModel()).create();
+        userRepository.save(testUser);
+
+        token = jwt().jwt(builder -> builder
+                .subject(testUser.getEmail())
+                .claim("id", testUser.getId())
+        );
     }
 
     @Test
     void testIndex() throws Exception {
-        userRepository.save(testUser);
-
-        var body = mockMvc.perform(get(BASE_URL))
+        var body = mockMvc.perform(get("/api/users").with(token))
                 .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].email")
+                        .value(Matchers.hasItem(testUser.getEmail())))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        assertThatJson(body).isArray();
-
         assertThatJson(body)
-                .inPath("$[0].email")
-                .isEqualTo(testUser.getEmail());
+                .isArray();
+    }
+
+    @Test
+    void testIndexWithoutTokenUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/users"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void testShow() throws Exception {
-        testUser = userRepository.save(testUser);
-
-        var body = mockMvc.perform(get(BASE_URL + "/{id}", testUser.getId()))
+        var body = mockMvc.perform(get("/api/users/{id}", testUser.getId()).with(token))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -99,7 +113,7 @@ class UsersControllerTest {
         var dto = buildCreateDto();
 
         mockMvc.perform(
-                        post(BASE_URL)
+                        post("/api/users")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
@@ -108,17 +122,22 @@ class UsersControllerTest {
         var user = userRepository.findByEmail(dto.getEmail()).orElseThrow();
 
         assertNotNull(user);
+        assertThat(user.getEmail()).isEqualTo(dto.getEmail());
+        assertThat(user.getPasswordHash()).isNotEqualTo(dto.getPassword());
+        assertThat(passwordEncoder.matches(dto.getPassword(), user.getPasswordHash())).isTrue();
+    }
 
-        assertThat(user.getEmail())
-                .isEqualTo(dto.getEmail());
+    @Test
+    void testCreateDuplicateEmailConflict() throws Exception {
+        var dto = buildCreateDto();
+        dto.setEmail(testUser.getEmail());
 
-        assertThat(user.getPassword())
-                .isNotEqualTo(dto.getPassword());
-
-        assertThat(passwordEncoder.matches(
-                dto.getPassword(),
-                user.getPassword()
-        )).isTrue();
+        mockMvc.perform(
+                        post("/api/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(om.writeValueAsString(dto))
+                )
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -127,7 +146,7 @@ class UsersControllerTest {
         dto.setEmail("invalid-email");
 
         mockMvc.perform(
-                        post(BASE_URL)
+                        post("/api/users")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
@@ -136,36 +155,53 @@ class UsersControllerTest {
 
     @Test
     void testUpdate() throws Exception {
-        testUser = userRepository.save(testUser);
-
         var oldFirstName = testUser.getFirstName();
-
         var dto = buildUpdateDto(JsonNullable.of("updated@email.com"));
 
         mockMvc.perform(
-                        put(BASE_URL + "/{id}", testUser.getId())
+                        put("/api/users/{id}", testUser.getId())
+                                .with(token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
                 .andExpect(status().isOk());
 
+        userRepository.flush();
+
         var updatedUser = userRepository.findById(testUser.getId()).orElseThrow();
 
-        assertThat(updatedUser.getEmail())
-                .isEqualTo("updated@email.com");
+        assertThat(updatedUser.getEmail()).isEqualTo("updated@email.com");
+        assertThat(updatedUser.getFirstName()).isEqualTo(oldFirstName);
+    }
 
-        assertThat(updatedUser.getFirstName())
-                .isEqualTo(oldFirstName);
+    @Test
+    void testUpdateForeignProfileForbidden() throws Exception {
+        var alienUser = Instancio.of(modelGenerator.getUserModel()).create();
+        userRepository.save(alienUser);
+
+        var alienToken = jwt().jwt(builder -> builder
+                .subject(alienUser.getEmail())
+                .claim("id", alienUser.getId())
+        );
+
+        var dto = buildUpdateDto(JsonNullable.of("hacked@email.com"));
+
+        mockMvc.perform(
+                        put("/api/users/{id}", testUser.getId())
+                                .with(alienToken)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(om.writeValueAsString(dto))
+                )
+                .andExpect(status().isForbidden());
     }
 
     @Test
     void testUpdateValidationError() throws Exception {
-        testUser = userRepository.save(testUser);
-
         var dto = buildUpdateDto(JsonNullable.of("not-email"));
 
         mockMvc.perform(
-                        put(BASE_URL + "/{id}", testUser.getId())
+                        put("/api/users/{id}", testUser.getId())
+                                .with(token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsString(dto))
                 )
@@ -174,28 +210,26 @@ class UsersControllerTest {
 
     @Test
     void testDestroy() throws Exception {
-        testUser = userRepository.save(testUser);
-
-        mockMvc.perform(delete(BASE_URL + "/{id}", testUser.getId()))
+        mockMvc.perform(delete("/api/users/{id}", testUser.getId()).with(token))
                 .andExpect(status().isNoContent());
 
-        assertThat(userRepository.existsById(testUser.getId()))
-                .isFalse();
+        userRepository.flush();
+
+        assertThat(userRepository.existsById(testUser.getId())).isFalse();
     }
 
-    private User buildUser() {
-        return Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .ignore(Select.field(User::getCreatedAt))
-                .supply(
-                        Select.field(User::getEmail),
-                        () -> faker.internet().emailAddress()
-                )
-                .supply(
-                        Select.field(User::getPasswordHash),
-                        () -> faker.internet().password()
-                )
-                .create();
+    @Test
+    void testDestroyForeignProfileForbidden() throws Exception {
+        var alienUser = Instancio.of(modelGenerator.getUserModel()).create();
+        userRepository.save(alienUser);
+
+        var alienToken = jwt().jwt(builder -> builder
+                .subject(alienUser.getEmail())
+                .claim("id", alienUser.getId())
+        );
+
+        mockMvc.perform(delete("/api/users/{id}", testUser.getId()).with(alienToken))
+                .andExpect(status().isForbidden());
     }
 
     private UserCreateDTO buildCreateDto() {
@@ -213,3 +247,4 @@ class UsersControllerTest {
         return dto;
     }
 }
+
