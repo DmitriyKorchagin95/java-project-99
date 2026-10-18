@@ -1,5 +1,6 @@
 package hexlet.code.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -45,6 +46,7 @@ public class Label implements BaseEntity {
     @NotBlank @Size(min = 3, max = 1000) @ToString.Include
     private String name;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "labels")
     private Set<Task> tasks = new HashSet<>();
 
