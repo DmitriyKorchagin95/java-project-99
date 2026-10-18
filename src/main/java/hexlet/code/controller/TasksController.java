@@ -7,6 +7,7 @@ import hexlet.code.dto.task.TaskUpdateDTO;
 import hexlet.code.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/tasks")
 @RequiredArgsConstructor
@@ -31,7 +30,7 @@ public class TasksController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<TaskDTO>> index(
+    public ResponseEntity<Page<TaskDTO>> index(
             TaskParamsDTO params,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int limit
@@ -40,7 +39,7 @@ public class TasksController {
 
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(taskPage.getTotalElements()))
-                .body(taskPage.getContent());
+                .body(taskPage);
     }
 
     @PostMapping

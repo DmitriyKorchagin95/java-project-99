@@ -1,4 +1,4 @@
-package hexlet.code.conroller;
+package hexlet.code.controller;
 
 import hexlet.code.dto.status.TaskStatusCreateDTO;
 import hexlet.code.dto.status.TaskStatusDTO;

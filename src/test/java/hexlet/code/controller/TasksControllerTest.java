@@ -23,7 +23,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
@@ -38,6 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -79,6 +79,7 @@ class TasksControllerTest {
     void setUp() {
         assignee = Instancio.of(modelGenerator.getUserModel()).create();
         userRepository.save(assignee);
+
         taskStatus = Instancio.of(modelGenerator.getStatusModel()).create();
         taskStatusRepository.save(taskStatus);
 
@@ -100,7 +101,9 @@ class TasksControllerTest {
         mockMvc.perform(get("/api/tasks").with(token))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Total-Count", "1"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
+                .andExpect(jsonPath("$.content[*].title")
+                        .value(hasItem(task.getName())))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
@@ -114,39 +117,39 @@ class TasksControllerTest {
         anotherTask.setLabels(Set.of());
         taskRepository.save(anotherTask);
 
-        mockMvc.perform(
-                        get("/api/tasks")
-                                .with(token)
-                                .param("titleCont", task.getName())
-                )
+        mockMvc.perform(get("/api/tasks")
+                        .with(token)
+                        .param("titleCont", task.getName()))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
+                .andExpect(jsonPath("$.content[*].title")
+                        .value(hasItem(task.getName())))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
     void testIndexFilterByAssignee() throws Exception {
         taskRepository.save(task);
 
-        mockMvc.perform(
-                        get("/api/tasks")
-                                .with(token)
-                                .param("assigneeId", assignee.getId().toString())
-                )
+        mockMvc.perform(get("/api/tasks")
+                        .with(token)
+                        .param("assigneeId", assignee.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
+                .andExpect(jsonPath("$.content[*].title")
+                        .value(hasItem(task.getName())))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
     void testIndexFilterByStatus() throws Exception {
         taskRepository.save(task);
 
-        mockMvc.perform(
-                        get("/api/tasks")
-                                .with(token)
-                                .param("status", taskStatus.getSlug())
-                )
+        mockMvc.perform(get("/api/tasks")
+                        .with(token)
+                        .param("status", taskStatus.getSlug()))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
+                .andExpect(jsonPath("$.content[*].title")
+                        .value(hasItem(task.getName())))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
@@ -157,13 +160,13 @@ class TasksControllerTest {
         task.setLabels(Set.of(label));
         taskRepository.save(task);
 
-        mockMvc.perform(
-                        get("/api/tasks")
-                                .with(token)
-                                .param("labelId", label.getId().toString())
-                )
+        mockMvc.perform(get("/api/tasks")
+                        .with(token)
+                        .param("labelId", label.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
+                .andExpect(jsonPath("$.content[*].title")
+                        .value(hasItem(task.getName())))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
@@ -176,22 +179,21 @@ class TasksControllerTest {
         anotherTask.setLabels(Set.of());
         taskRepository.save(anotherTask);
 
-        var result = mockMvc.perform(
-                        get("/api/tasks")
-                                .with(token)
-                                .param("page", "1")
-                                .param("limit", "1")
-                )
+        var result = mockMvc.perform(get("/api/tasks")
+                        .with(token)
+                        .param("page", "1")
+                        .param("limit", "1"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Total-Count", "2"))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(2))
                 .andReturn();
 
         var body = result.getResponse().getContentAsString();
-
-        assertThatJson(body).isArray();
-        assertThatJson(body)
-                .inPath("size()")
-                .isEqualTo(1);
+        assertThatJson(body).node("content").isArray();
+        assertThat(om.readTree(body).get("content")).hasSize(1);
     }
 
     @Test
@@ -225,12 +227,10 @@ class TasksControllerTest {
         dto.setTaskStatus(taskStatus.getSlug());
         dto.setAssigneeId(assignee.getId());
 
-        mockMvc.perform(
-                        post("/api/tasks")
-                                .with(token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(om.writeValueAsString(dto))
-                )
+        mockMvc.perform(post("/api/tasks")
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
 
         var created = taskRepository.findAll().stream()
@@ -246,12 +246,11 @@ class TasksControllerTest {
     void testCreateValidationError() throws Exception {
         var dto = new TaskCreateDTO();
         dto.setName("");
-        mockMvc.perform(
-                        post("/api/tasks")
-                                .with(token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(om.writeValueAsString(dto))
-                )
+
+        mockMvc.perform(post("/api/tasks")
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -262,12 +261,10 @@ class TasksControllerTest {
         var dto = new TaskUpdateDTO();
         dto.setName(JsonNullable.of("Updated Task Name"));
 
-        mockMvc.perform(
-                        put("/api/tasks/{id}", task.getId())
-                                .with(token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(om.writeValueAsString(dto))
-                )
+        mockMvc.perform(put("/api/tasks/{id}", task.getId())
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
                 .andExpect(status().isOk());
 
         taskRepository.flush();
@@ -275,23 +272,30 @@ class TasksControllerTest {
         var updated = taskRepository.findById(task.getId()).orElseThrow();
         assertThat(updated.getName()).isEqualTo("Updated Task Name");
     }
+
     @Test
     void testDestroy() throws Exception {
         task = taskRepository.save(task);
+
         mockMvc.perform(delete("/api/tasks/{id}", task.getId()).with(token))
                 .andExpect(status().isNoContent());
+
         taskRepository.flush();
         assertThat(taskRepository.existsById(task.getId())).isFalse();
     }
+
     @Test
     void testDestroyForeignTaskForbidden() throws Exception {
         task = taskRepository.save(task);
+
         var alienUser = Instancio.of(modelGenerator.getUserModel()).create();
         userRepository.save(alienUser);
+
         var alienToken = jwt().jwt(builder -> builder
                 .subject(alienUser.getEmail())
                 .claim("id", alienUser.getId())
         );
+
         mockMvc.perform(delete("/api/tasks/{id}", task.getId()).with(alienToken))
                 .andExpect(status().isForbidden());
     }

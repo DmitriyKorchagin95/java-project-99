@@ -9,67 +9,33 @@ import org.springframework.stereotype.Component;
 public class TaskSpecification {
 
     public Specification<Task> build(TaskParamsDTO params) {
-        Specification<Task> specification = (root, query, cb) -> cb.conjunction();
-
-        if (params.getTitleCont() != null && !params.getTitleCont().isBlank()) {
-            specification = specification.and(
-                    withTitle(params.getTitleCont())
-            );
-        }
-
-        if (params.getAssigneeId() != null) {
-            specification = specification.and(
-                    withAssigneeId(params.getAssigneeId())
-            );
-        }
-
-        if (params.getStatus() != null && !params.getStatus().isBlank()) {
-            specification = specification.and(
-                    withStatus(params.getStatus())
-            );
-        }
-
-        if (params.getLabelId() != null) {
-            specification = specification.and(
-                    withLabelId(params.getLabelId())
-            );
-        }
-
-        return specification;
-    }
-
-    private Specification<Task> withTitle(String titleCont) {
-        return (root, query, cb) ->
-                cb.like(
-                        cb.lower(root.get("name")),
-                        "%" + titleCont.toLowerCase() + "%"
-                );
+        return withAssigneeId(params.getAssigneeId())
+                .and(withStatus(params.getStatus()))
+                .and(withLabelId(params.getLabelId()))
+                .and(withTitleCont(params.getTitleCont()));
     }
 
     private Specification<Task> withAssigneeId(Long assigneeId) {
-        return (root, query, cb) ->
-                cb.equal(
-                        root.get("assignee").get("id"),
-                        assigneeId
-                );
-    }
-
-    private Specification<Task> withStatus(String status) {
-        return (root, query, cb) ->
-                cb.equal(
-                        root.get("taskStatus").get("slug"),
-                        status
-                );
+        return (root, query, cb) -> assigneeId == null
+                ? cb.conjunction()
+                : cb.equal(root.get("assignee").get("id"), assigneeId);
     }
 
     private Specification<Task> withLabelId(Long labelId) {
-        return (root, query, cb) -> {
-            query.distinct(true);
+        return (root, query, cb) -> labelId == null
+                ? cb.conjunction()
+                : cb.equal(root.get("labels").get("id"), labelId);
+    }
 
-            return cb.equal(
-                    root.join("labels").get("id"),
-                    labelId
-            );
-        };
+    private Specification<Task> withTitleCont(String titleCont) {
+        return (root, query, cb) -> titleCont == null
+                ? cb.conjunction()
+                : cb.like(cb.lower(root.get("name")), "%" + titleCont.toLowerCase() + "%");
+    }
+
+    private Specification<Task> withStatus(String statusSlug) {
+        return (root, query, cb) -> statusSlug == null
+                ? cb.conjunction()
+                : cb.equal(root.get("taskStatus").get("slug"), statusSlug);
     }
 }

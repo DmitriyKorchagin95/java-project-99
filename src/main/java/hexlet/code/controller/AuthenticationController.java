@@ -1,4 +1,4 @@
-package hexlet.code.conroller;
+package hexlet.code.controller;
 
 import hexlet.code.dto.AuthRequest;
 import hexlet.code.service.AuthenticationService;

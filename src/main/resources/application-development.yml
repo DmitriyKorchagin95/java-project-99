@@ -12,8 +12,8 @@ spring:
     hibernate:
       ddl-auto: create-drop
 debug: true
-#logging:
-#  level:
-#    root: DEBUG
-#    org.springframework.web: DEBUG
-#    org.apache.coyote.http11: DEBUG
+logging:
+  level:
+    root: DEBUG
+    org.springframework.web: DEBUG
+    org.apache.coyote.http11: DEBUG
