@@ -23,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
@@ -37,7 +38,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -101,9 +101,7 @@ class TasksControllerTest {
         mockMvc.perform(get("/api/tasks").with(token))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Total-Count", "1"))
-                .andExpect(jsonPath("$.content[*].title")
-                        .value(hasItem(task.getName())))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
     }
 
     @Test
@@ -121,9 +119,7 @@ class TasksControllerTest {
                         .with(token)
                         .param("titleCont", task.getName()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[*].title")
-                        .value(hasItem(task.getName())))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
     }
 
     @Test
@@ -134,9 +130,7 @@ class TasksControllerTest {
                         .with(token)
                         .param("assigneeId", assignee.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[*].title")
-                        .value(hasItem(task.getName())))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
     }
 
     @Test
@@ -147,9 +141,7 @@ class TasksControllerTest {
                         .with(token)
                         .param("status", taskStatus.getSlug()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[*].title")
-                        .value(hasItem(task.getName())))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
     }
 
     @Test
@@ -164,9 +156,7 @@ class TasksControllerTest {
                         .with(token)
                         .param("labelId", label.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[*].title")
-                        .value(hasItem(task.getName())))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
     }
 
     @Test
@@ -185,15 +175,12 @@ class TasksControllerTest {
                         .param("limit", "1"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Total-Count", "2"))
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.totalElements").value(2))
-                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(MockMvcResultMatchers.jsonPath("$").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(1))
                 .andReturn();
 
         var body = result.getResponse().getContentAsString();
-        assertThatJson(body).node("content").isArray();
-        assertThat(om.readTree(body).get("content")).hasSize(1);
+        assertThatJson(body).isArray();
     }
 
     @Test
@@ -246,7 +233,6 @@ class TasksControllerTest {
     void testCreateValidationError() throws Exception {
         var dto = new TaskCreateDTO();
         dto.setName("");
-
         mockMvc.perform(post("/api/tasks")
                         .with(token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -281,21 +267,19 @@ class TasksControllerTest {
                 .andExpect(status().isNoContent());
 
         taskRepository.flush();
+
         assertThat(taskRepository.existsById(task.getId())).isFalse();
     }
 
     @Test
     void testDestroyForeignTaskForbidden() throws Exception {
         task = taskRepository.save(task);
-
         var alienUser = Instancio.of(modelGenerator.getUserModel()).create();
         userRepository.save(alienUser);
-
         var alienToken = jwt().jwt(builder -> builder
                 .subject(alienUser.getEmail())
                 .claim("id", alienUser.getId())
         );
-
         mockMvc.perform(delete("/api/tasks/{id}", task.getId()).with(alienToken))
                 .andExpect(status().isForbidden());
     }
