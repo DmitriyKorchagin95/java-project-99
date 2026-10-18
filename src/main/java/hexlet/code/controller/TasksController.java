@@ -31,16 +31,10 @@ public class TasksController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<TaskDTO>> index(
-            TaskParamsDTO params,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit
-    ) {
-        var taskPage = taskService.findAll(params, page, limit);
-
+    public ResponseEntity<List<TaskDTO>> getAll(TaskParamsDTO params, @RequestParam(defaultValue = "1") Integer page) {
+        var tasks = taskService.findAll(params, page - 1, 10);
         return ResponseEntity.ok()
-                .header("X-Total-Count", String.valueOf(taskPage.getTotalElements()))
-                .body(taskPage.getContent());
+                .body(tasks);
     }
 
     @PostMapping
@@ -67,7 +61,9 @@ public class TasksController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("@taskRepository.findById(#id).orElse(null)?.assignee?.email == authentication.name")
+    @PreAuthorize(
+            "@taskService.findById(#id).assigneeId == @userRepository.findByEmail(authentication.name).orElse(null)?.id"
+    )
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         taskService.delete(id);
         return ResponseEntity.noContent().build();

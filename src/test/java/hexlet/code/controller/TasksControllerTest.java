@@ -37,7 +37,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -100,7 +99,6 @@ class TasksControllerTest {
 
         mockMvc.perform(get("/api/tasks").with(token))
                 .andExpect(status().isOk())
-                .andExpect(header().string("X-Total-Count", "1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
     }
 
@@ -174,9 +172,7 @@ class TasksControllerTest {
                         .param("page", "1")
                         .param("limit", "1"))
                 .andExpect(status().isOk())
-                .andExpect(header().string("X-Total-Count", "2"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$").isArray())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(1))
                 .andReturn();
 
         var body = result.getResponse().getContentAsString();

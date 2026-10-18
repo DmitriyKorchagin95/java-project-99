@@ -17,12 +17,12 @@ import hexlet.code.repository.UserRepository;
 import hexlet.code.specification.TaskSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -69,14 +69,15 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TaskDTO> findAll(TaskParamsDTO params, int page, int limit) {
+    public List<TaskDTO> findAll(TaskParamsDTO params, int page, int limit) {
         log.debug("Finding tasks: page={}, limit={}, params={}", page, limit, params);
 
         var specification = taskSpecification.build(params);
-        var pageable = PageRequest.of(page - 1, limit);
+        var pageable = PageRequest.of(page, limit);
 
-        return taskRepository.findAll(specification, pageable)
-                .map(taskMapper::map);
+        return taskRepository.findAll(specification, pageable).stream()
+                .map(taskMapper::map)
+                .toList();
     }
 
     @Transactional
