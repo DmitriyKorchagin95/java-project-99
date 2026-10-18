@@ -67,7 +67,7 @@ public class TasksController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("@taskRepository.findById(#id).orElse(null)?.assignee?.id == authentication.principal.claims['id']")
+    @PreAuthorize("@taskRepository.findById(#id).orElse(null)?.assignee?.email == authentication.name")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         taskService.delete(id);
         return ResponseEntity.noContent().build();
