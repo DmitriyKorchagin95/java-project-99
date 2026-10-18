@@ -22,6 +22,6 @@ public class TaskDTO {
     @JsonProperty("status")
     private String taskStatus;
     private List<Long> taskLabelIds;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "UTC")
     private Instant createdAt;
 }
