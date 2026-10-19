@@ -17,7 +17,6 @@ import hexlet.code.repository.UserRepository;
 import hexlet.code.specification.TaskSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,13 +68,12 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskDTO> findAll(TaskParamsDTO params, int page, int limit) {
-        log.debug("Finding tasks: page={}, limit={}, params={}", page, limit, params);
+    public List<TaskDTO> findAll(TaskParamsDTO params) {
+        log.debug("Finding tasks with params={}", params);
 
         var specification = taskSpecification.build(params);
-        var pageable = PageRequest.of(page, limit);
 
-        return taskRepository.findAll(specification, pageable).stream()
+        return taskRepository.findAll(specification).stream()
                 .map(taskMapper::map)
                 .toList();
     }
