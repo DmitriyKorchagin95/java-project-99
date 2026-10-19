@@ -33,6 +33,7 @@ public class TasksController {
     public ResponseEntity<List<TaskDTO>> getAll(TaskParamsDTO params) {
         var tasks = taskService.findAll(params);
         return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(tasks.size()))
                 .body(tasks);
     }
 
