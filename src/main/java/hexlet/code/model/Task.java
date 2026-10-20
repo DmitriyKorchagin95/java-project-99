@@ -52,7 +52,7 @@ public class Task implements BaseEntity {
     @ToString.Include
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional  = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "task_status_id", nullable = false)
     private TaskStatus taskStatus;
 
