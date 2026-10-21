@@ -4,6 +4,7 @@ import hexlet.code.dto.task.TaskParamsDTO;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,7 +21,7 @@ public class TaskSpecification {
     }
 
     private Specification<Task> withTitleCont(String titleCont) {
-        return (root, query, cb) -> titleCont == null
+        return (root, query, cb) -> titleCont == null || titleCont.isBlank()
                 ? cb.conjunction()
                 : cb.like(cb.lower(root.get("name")), "%" + titleCont.toLowerCase() + "%");
     }
@@ -28,19 +29,17 @@ public class TaskSpecification {
     private Specification<Task> withAssigneeId(Long assigneeId) {
         return (root, query, cb) -> assigneeId == null
                 ? cb.conjunction()
-                : cb.equal(root.get("assignee").get("id"), assigneeId);
+                : cb.equal(root.join("assignee", JoinType.LEFT).get("id"), assigneeId);
     }
 
     private Specification<Task> withStatus(String statusSlug) {
-        return (root, query, cb) -> statusSlug == null
+        return (root, query, cb) -> statusSlug == null || statusSlug.isBlank()
                 ? cb.conjunction()
-                : cb.equal(root.get("taskStatus").get("slug"), statusSlug);
+                : cb.equal(root.join("taskStatus", JoinType.LEFT).get("slug"), statusSlug);
     }
-
 
     private Specification<Task> withLabelId(Long labelId) {
         return (root, query, cb) -> {
-
             if (labelId == null) {
                 return cb.conjunction();
             }
