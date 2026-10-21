@@ -40,6 +40,7 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
     implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.24.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.9.1")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
