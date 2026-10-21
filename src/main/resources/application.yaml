@@ -2,6 +2,7 @@ spring:
   application:
     name: app
   jpa:
+    generate-ddl: true
     show-sql: true
     open-in-view: false
     hibernate:
@@ -12,12 +13,18 @@ spring:
   profiles:
     default: development
 
+  springdoc:
+    swagger-ui:
+      path: /swagger-ui.html
+      api-docs:
+        path: /api-docs
+
 logging:
   level:
     root: WARN
     org:
       springframework:
-        security: trace
+        security: DEBUG
 
 rsa:
   public-key: classpath:certs/public.pem
