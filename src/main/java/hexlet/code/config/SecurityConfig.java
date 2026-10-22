@@ -57,13 +57,14 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/index.html",
+                                "/favicon.ico",
                                 "/assets/**",
                                 "/api/login",
                                 "/actuator/**",
                                 "/h2-console/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
-                                "/api-docs/**" // Две звездочки обязательны, чтобы разрешить /api-docs/swagger-config
+                                "/api-docs/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .anyRequest().authenticated()

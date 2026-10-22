@@ -31,7 +31,7 @@ public class TasksController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<TaskDTO>> getAll(@ParameterObject TaskParamsDTO params) {
+    public ResponseEntity<List<TaskDTO>> index(@ParameterObject TaskParamsDTO params) {
         var tasks = taskService.findAll(params);
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(tasks.size()))

@@ -1,11 +1,7 @@
 package hexlet.code.specification;
 
 import hexlet.code.dto.task.TaskParamsDTO;
-import hexlet.code.model.Label;
 import hexlet.code.model.Task;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -38,21 +34,8 @@ public class TaskSpecification {
     }
 
     private Specification<Task> withLabelId(Long labelId) {
-        return (root, query, cb) -> {
-            if (labelId == null) {
-                return cb.conjunction();
-            }
-
-            Subquery<Long> subquery = query.subquery(Long.class);
-            Root<Task> subRoot = subquery.from(Task.class);
-            Join<Task, Label> labelJoin = subRoot.join("labels");
-
-            subquery.select(subRoot.get("id")).where(
-                    cb.equal(subRoot.get("id"), root.get("id")),
-                    cb.equal(labelJoin.get("id"), labelId)
-            );
-
-            return cb.exists(subquery);
-        };
+        return ((root, query, cb) -> labelId == null
+                ? cb.conjunction()
+                : cb.equal(root.get("labels").get("id"), labelId));
     }
 }
