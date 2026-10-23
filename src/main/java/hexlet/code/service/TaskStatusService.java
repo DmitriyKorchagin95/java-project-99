@@ -76,7 +76,6 @@ public class TaskStatusService {
 
         taskStatusMapper.update(dto, taskStatus);
         var updatedTaskStatus = taskStatusRepository.save(taskStatus);
-
         return taskStatusMapper.map(updatedTaskStatus);
     }
 
