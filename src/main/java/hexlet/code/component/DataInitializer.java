@@ -39,9 +39,9 @@ public class DataInitializer implements ApplicationRunner {
         }
 
         createStatus("Draft", "draft");
-        createStatus("To Review", "to_review");
-        createStatus("To Be Fixed", "to_be_fixed");
-        createStatus("To Publish", "to_publish");
+        createStatus("ToReview", "to_review");
+        createStatus("ToBeFixed", "to_be_fixed");
+        createStatus("ToPublish", "to_publish");
         createStatus("Published", "published");
         createLabel("feature");
         createLabel("bug");
