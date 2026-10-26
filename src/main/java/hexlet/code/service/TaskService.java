@@ -28,6 +28,7 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 public class TaskService {
+    private static final String NOT_FOUND_MSG_TEMPLATE = "Task with id %d not found";
     private final UserRepository userRepository;
     private final TaskMapper taskMapper;
     private final TaskStatusRepository taskStatusRepository;
@@ -52,7 +53,6 @@ public class TaskService {
 
         var savedTask = taskRepository.save(task);
         log.info("Task created: id={}", savedTask.getId());
-
         return taskMapper.map(savedTask);
     }
 
@@ -63,7 +63,7 @@ public class TaskService {
         return taskRepository.findById(id)
                 .map(taskMapper::map)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Task with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
     }
 
@@ -84,15 +84,13 @@ public class TaskService {
 
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Task with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
 
         taskMapper.update(dto, task);
-
         updateStatus(dto, task);
         updateAssignee(dto, task);
         updateLabels(dto, task);
-
         var updatedTask = taskRepository.save(task);
         return taskMapper.map(updatedTask);
     }
@@ -103,7 +101,7 @@ public class TaskService {
 
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Task with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
 
         taskRepository.delete(task);
@@ -131,17 +129,21 @@ public class TaskService {
     }
 
     private void updateLabels(TaskUpdateDTO dto, Task task) {
+
         if (!dto.getTaskLabelIds().isPresent()) {
             return;
         }
+
         task.setLabels(getLabels(dto.getTaskLabelIds().get()));
     }
 
     private HashSet<Label> getLabels(Set<Long> ids) {
         var labels = new HashSet<>(labelRepository.findAllById(ids));
+
         if (labels.size() != ids.size()) {
             throw new ResourceNotFoundException("One or more labels not found");
         }
+
         return labels;
     }
 

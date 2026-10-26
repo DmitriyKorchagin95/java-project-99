@@ -19,6 +19,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class TaskStatusService {
+    private static final String NOT_FOUND_MSG_TEMPLATE = "Task status with id %d not found";
     private final TaskStatusRepository taskStatusRepository;
     private final TaskStatusMapper taskStatusMapper;
     private final TaskRepository taskRepository;
@@ -45,7 +46,7 @@ public class TaskStatusService {
         return taskStatusRepository.findById(id)
                 .map(taskStatusMapper::map)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Task status with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
     }
 
@@ -64,7 +65,7 @@ public class TaskStatusService {
 
         var taskStatus = taskStatusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Task status with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
 
         if (dto.getName().isPresent() && !taskStatus.getName().equals(dto.getName().get())
@@ -85,7 +86,7 @@ public class TaskStatusService {
 
         var taskStatus = taskStatusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Task status with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
 
         if (taskRepository.existsByTaskStatus(taskStatus)) {

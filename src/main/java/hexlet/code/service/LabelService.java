@@ -18,6 +18,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class LabelService {
+    private static final String NOT_FOUND_MSG_TEMPLATE = "Label with id %d not found";
     private final LabelRepository labelRepository;
     private final LabelMapper labelMapper;
 
@@ -44,7 +45,7 @@ public class LabelService {
         return labelRepository.findById(id)
                 .map(labelMapper::map)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Label with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
     }
 
@@ -63,7 +64,7 @@ public class LabelService {
 
         var label = labelRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Label with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
 
         if (dto.getName().isPresent() && !label.getName().equals(dto.getName().get())
@@ -85,7 +86,7 @@ public class LabelService {
 
         var label = labelRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Label with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
 
         if (label.getTasks() != null && !label.getTasks().isEmpty()) {

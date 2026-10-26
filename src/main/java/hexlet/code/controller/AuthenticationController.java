@@ -18,7 +18,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<String> create(@RequestBody AuthRequest authRequest) {
         return new ResponseEntity<>(
                 authenticationService.authenticate(
                         authRequest.getUsername(),

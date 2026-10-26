@@ -61,7 +61,7 @@ public class User implements BaseEntity, UserDetails {
 
     @JsonIgnore
     @OneToMany(mappedBy = "assignee", fetch = FetchType.LAZY)
-    private Set<Task> tasks = new HashSet<>();
+    private transient Set<Task> tasks = new HashSet<>();
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
