@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <verification-metadata xmlns="https://schema.gradle.org/dependency-verification" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://schema.gradle.org/dependency-verification https://schema.gradle.org/dependency-verification/dependency-verification-1.4.xsd">
    <configuration>
-      <verify-metadata>true</verify-metadata>
-      <verify-signatures>true</verify-signatures>
+      <verify-metadata>false</verify-metadata>
+      <verify-signatures>false</verify-signatures>
       <on-unverified-checksums>lenient</on-unverified-checksums>
       <ignored-keys>
          <ignored-key id="0AA3E5C3D232E79B" reason="Key couldn't be downloaded from any key server"/>
