@@ -11,7 +11,7 @@ spring:
     ansi:
       enabled: always
   profiles:
-    default: development
+    default: production
 
 springdoc:
   api-docs:

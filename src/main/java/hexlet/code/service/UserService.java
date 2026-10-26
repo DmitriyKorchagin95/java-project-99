@@ -23,7 +23,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
-
+    private static final String NOT_FOUND_MSG_TEMPLATE = "User with id %d not found";
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -53,7 +53,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findById(id)
                 .map(userMapper::map)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("User with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
     }
 
@@ -72,7 +72,7 @@ public class UserService implements UserDetailsService {
 
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("User with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
 
         userMapper.update(dto, user);
@@ -93,7 +93,7 @@ public class UserService implements UserDetailsService {
 
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("User with id %d not found", id)
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
 
         if (taskRepository.existsByAssignee(user)) {
