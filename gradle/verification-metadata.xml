@@ -3,6 +3,7 @@
    <configuration>
       <verify-metadata>true</verify-metadata>
       <verify-signatures>true</verify-signatures>
+      <on-unverified-checksums>lenient</on-unverified-checksums>
       <ignored-keys>
          <ignored-key id="0AA3E5C3D232E79B" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="0E325BECB6962A24" reason="Key couldn't be downloaded from any key server"/>
