@@ -2,7 +2,6 @@ plugins {
     application
     jacoco
     checkstyle
-    alias(libs.plugins.sentryJvmGradle)
     alias(libs.plugins.benManes)
     alias(libs.plugins.sonarqube)
     alias(libs.plugins.lombok)
@@ -33,6 +32,7 @@ dependencies {
     implementation(libs.mapstruct)
     implementation(libs.datafaker)
     implementation(libs.instancio.junit)
+    implementation(libs.sentry.spring.boot)
     implementation(libs.springdoc.openapi)
     developmentOnly(libs.spring.boot.devtools)
     annotationProcessor(libs.spring.boot.configuration.processor)
@@ -69,15 +69,4 @@ sonar {
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
     }
-}
-
-sentry {
-    // Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
-    // This enables source context, allowing you to see your source
-    // code as part of your stack traces in Sentry.
-    includeSourceContext = true
-
-    org = "null-06n"
-    projectName = "java-project-99"
-    authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
