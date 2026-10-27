@@ -41,13 +41,20 @@ ___
 ## Технологии
 
 - Java 21
-- - Gradle
+- Gradle
 - Spring Boot
 - Spring Data JPA
 - Spring Security
 - PostgreSQL
 - Docker
 ___
+
+## Локальная сборка и запуск:
+```bash
+git clone https://github.com/DmitriyKorchagin95/java-project-99
+cd java-project-99
+make start
+```
 
 # Демо
 ### [Application on Render](https://java-project-99-7dnz.onrender.com)

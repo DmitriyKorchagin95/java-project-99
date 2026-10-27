@@ -21,7 +21,6 @@ springdoc:
     config-url: /api-docs/swagger-config
     url: /api-docs
 
-
 logging:
   level:
     root: WARN

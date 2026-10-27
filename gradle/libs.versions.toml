@@ -9,11 +9,12 @@ jacksonNullable = "0.2.6"
 mapstruct = "1.6.3"
 datafaker = "2.4.2"
 instancio = "5.6.0"
-sentry = "8.24.0"
+sentryJvmGradle = "6.24.0"
 springdoc = "2.9.1"
 jsonUnit = "2.37.0"
 
 [plugins]
+sentryJvmGradle = { id = "io.sentry.jvm.gradle", version.ref = "sentryJvmGradle" }
 benManes = { id = "com.github.ben-manes.versions", version.ref = "benManes" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
 lombok = { id = "io.freefair.lombok", version.ref = "lombokPlugin" }
@@ -39,7 +40,6 @@ mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 datafaker = { module = "net.datafaker:datafaker", version.ref = "datafaker" }
 instancio-junit = { module = "org.instancio:instancio-junit", version.ref = "instancio" }
-sentry-spring-boot = { module = "io.sentry:sentry-spring-boot-starter-jakarta", version.ref = "sentry" }
 springdoc-openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
