@@ -2,6 +2,7 @@ package hexlet.code.controller;
 
 import hexlet.code.dto.AuthRequest;
 import hexlet.code.service.AuthenticationService;
+import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,13 @@ public class AuthenticationController {
 
     @PostMapping
     public ResponseEntity<String> create(@RequestBody AuthRequest authRequest) {
+
+        try {
+            throw new Exception("This is a test.");
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
         return new ResponseEntity<>(
                 authenticationService.authenticate(
                         authRequest.getUsername(),
