@@ -6,4 +6,4 @@ spring:
     password: ${DB_PASSWORD}
 
 sentry:
-  dsn: ${SENTRY_DSN}
+  dsn: ${SENTRY_DSN:}
