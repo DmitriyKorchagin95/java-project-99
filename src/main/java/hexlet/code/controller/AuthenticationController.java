@@ -4,7 +4,6 @@ import hexlet.code.dto.AuthRequest;
 import hexlet.code.service.AuthenticationService;
 import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,18 +19,14 @@ public class AuthenticationController {
 
     @PostMapping
     public ResponseEntity<String> create(@RequestBody AuthRequest authRequest) {
+        Sentry.captureException(new Exception("Test event from Render"));
 
-        try {
-            throw new Exception("This is a test.");
-        } catch (Exception e) {
-            Sentry.captureException(e);
-        }
+        var authenticate = authenticationService.authenticate(
+                authRequest.getUsername(),
+                authRequest.getPassword()
+        );
 
-        return new ResponseEntity<>(
-                authenticationService.authenticate(
-                        authRequest.getUsername(),
-                        authRequest.getPassword()
-                ),
-                HttpStatus.OK);
+        return ResponseEntity.ok().
+                body(authenticate);
     }
 }
