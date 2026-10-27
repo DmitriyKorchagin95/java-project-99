@@ -21,6 +21,4 @@ COPY --from=builder --chown=springuser:springgroup /app/build/libs/*.jar app.jar
 
 USER springuser
 
-EXPOSE 8080
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
