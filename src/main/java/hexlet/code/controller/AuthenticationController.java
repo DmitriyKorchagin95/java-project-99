@@ -19,8 +19,6 @@ public class AuthenticationController {
 
     @PostMapping
     public ResponseEntity<String> create(@RequestBody AuthRequest authRequest) {
-        Sentry.captureException(new Exception("Test event from Render"));
-
         var authenticate = authenticationService.authenticate(
                 authRequest.getUsername(),
                 authRequest.getPassword()
