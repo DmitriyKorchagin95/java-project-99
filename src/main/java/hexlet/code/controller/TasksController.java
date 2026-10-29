@@ -30,7 +30,6 @@ public class TasksController {
     private final TaskService taskService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<TaskDTO>> index(@ParameterObject TaskParamsDTO params) {
         var tasks = taskService.findAll(params);
         return ResponseEntity.ok()
@@ -39,7 +38,6 @@ public class TasksController {
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TaskDTO> create(@Valid @RequestBody TaskCreateDTO taskData) {
         var task = taskService.create(taskData);
         return ResponseEntity
@@ -48,22 +46,20 @@ public class TasksController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TaskDTO> show(@PathVariable Long id) {
         var task = taskService.findById(id);
         return ResponseEntity.ok(task);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TaskDTO> update(@Valid @RequestBody TaskUpdateDTO taskData, @PathVariable Long id) {
         var task = taskService.update(id, taskData);
         return ResponseEntity.ok(task);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize(
-            "@taskService.findById(#id).assigneeId == @userRepository.findByEmail(authentication.name).orElse(null)?.id"
+    @PreAuthorize("@taskServiceImpl.findById(#id).assigneeId"
+            + " == @userRepository.findByEmail(authentication.name).orElse(null)?.id"
     )
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         taskService.delete(id);

@@ -6,9 +6,9 @@ import hexlet.code.dto.user.UserCreateDTO;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
-import hexlet.code.service.LabelService;
-import hexlet.code.service.TaskStatusService;
-import hexlet.code.service.UserService;
+import hexlet.code.service.impl.LabelServiceImpl;
+import hexlet.code.service.impl.TaskStatusServiceImpl;
+import hexlet.code.service.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -18,11 +18,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationRunner {
     private static final String ADMIN_EMAIL = "hexlet@example.com";
-    private final UserService userService;
+    private final UserServiceImpl userService;
     private final UserRepository userRepository;
-    private final TaskStatusService taskStatusService;
+    private final TaskStatusServiceImpl taskStatusService;
     private final TaskStatusRepository taskStatusRepository;
-    private final LabelService labelService;
+    private final LabelServiceImpl labelService;
     private final LabelRepository labelRepository;
 
     @Override

@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +27,6 @@ public class TaskStatusesController {
     private final TaskStatusService taskStatusService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<TaskStatusDTO>> index() {
         var taskStatuses = taskStatusService.findAll();
         return ResponseEntity.ok()
@@ -37,7 +35,6 @@ public class TaskStatusesController {
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TaskStatusDTO> create(@Valid @RequestBody TaskStatusCreateDTO taskStatusData) {
         var taskStatus = taskStatusService.create(taskStatusData);
         return ResponseEntity
@@ -46,14 +43,12 @@ public class TaskStatusesController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TaskStatusDTO> show(@PathVariable Long id) {
         var taskStatus = taskStatusService.findById(id);
         return ResponseEntity.ok(taskStatus);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TaskStatusDTO> update(
             @Valid @RequestBody TaskStatusUpdateDTO taskStatusData,
             @PathVariable Long id
@@ -63,7 +58,6 @@ public class TaskStatusesController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         taskStatusService.delete(id);
         return ResponseEntity.noContent().build();

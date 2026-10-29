@@ -28,7 +28,6 @@ public class UsersController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<UserDTO>> index() {
         var users = userService.findAll();
         return ResponseEntity.ok()

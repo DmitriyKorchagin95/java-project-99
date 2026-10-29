@@ -1,5 +1,6 @@
-package hexlet.code.service;
+package hexlet.code.service.impl;
 
+import hexlet.code.service.JsonWebTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -11,9 +12,10 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
-public class JwtService {
+public class JsonWebTokenServiceImpl implements JsonWebTokenService {
     private final JwtEncoder encoder;
 
+    @Override
     public String generateToken(String username) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder().issuer("self").issuedAt(now)

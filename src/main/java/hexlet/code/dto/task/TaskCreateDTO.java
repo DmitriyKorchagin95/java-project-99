@@ -11,7 +11,9 @@ import java.util.Set;
 @Getter
 @Setter
 public class TaskCreateDTO {
-    @NotBlank @Size(min = 1) @JsonProperty("title")
+    @NotBlank
+    @Size(min = 1)
+    @JsonProperty("title")
     private String name;
     private Long index;
     @JsonProperty("content")
@@ -19,6 +21,7 @@ public class TaskCreateDTO {
     @JsonProperty("assignee_id")
     private Long assigneeId;
     private Set<Long> taskLabelIds;
-    @NotBlank @JsonProperty("status")
+    @NotBlank
+    @JsonProperty("status")
     private String taskStatus;
 }

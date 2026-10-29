@@ -1,0 +1,174 @@
+package hexlet.code.service.impl;
+
+import hexlet.code.dto.task.TaskCreateDTO;
+import hexlet.code.dto.task.TaskDTO;
+import hexlet.code.dto.task.TaskParamsDTO;
+import hexlet.code.dto.task.TaskUpdateDTO;
+import hexlet.code.exception.ResourceNotFoundException;
+import hexlet.code.mapper.TaskMapper;
+import hexlet.code.model.Label;
+import hexlet.code.model.Task;
+import hexlet.code.model.TaskStatus;
+import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
+import hexlet.code.repository.TaskRepository;
+import hexlet.code.repository.TaskStatusRepository;
+import hexlet.code.repository.UserRepository;
+import hexlet.code.service.TaskService;
+import hexlet.code.specification.TaskSpecification;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class TaskServiceImpl implements TaskService {
+    private static final String NOT_FOUND_MSG_TEMPLATE = "Task with id %d not found";
+    private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
+    private final TaskStatusRepository taskStatusRepository;
+    private final LabelRepository labelRepository;
+    private final TaskSpecification taskSpecification;
+
+    @Transactional
+    @Override
+    public TaskDTO create(TaskCreateDTO dto) {
+        log.info("Creating task: name='{}', status='{}'", dto.getName(), dto.getTaskStatus());
+
+        var task = taskMapper.map(dto);
+        var taskStatus = getTaskStatus(dto.getTaskStatus());
+        task.setTaskStatus(taskStatus);
+
+        if (dto.getAssigneeId() != null) {
+            var assignee = getUser(dto.getAssigneeId());
+            task.setAssignee(assignee);
+        }
+
+        if (dto.getTaskLabelIds() != null) {
+            var labels = getLabels(dto.getTaskLabelIds());
+            task.setLabels(labels);
+        }
+
+        var savedTask = taskRepository.save(task);
+        log.info("Task created: id={}", savedTask.getId());
+        return taskMapper.map(savedTask);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public TaskDTO findById(Long id) {
+        log.debug("Finding task: id={}", id);
+
+        return taskRepository.findById(id)
+                .map(taskMapper::map)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
+                ));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<TaskDTO> findAll(TaskParamsDTO params) {
+        log.debug("Finding tasks with params={}", params);
+
+        var specification = taskSpecification.build(params);
+
+        return taskRepository.findAll(specification).stream()
+                .map(taskMapper::map)
+                .toList();
+    }
+
+    @Transactional
+    @Override
+    public TaskDTO update(Long id, TaskUpdateDTO dto) {
+        log.info("Updating task: id={}", id);
+
+        var task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
+                ));
+
+        taskMapper.update(dto, task);
+        updateStatus(dto, task);
+        updateAssignee(dto, task);
+        updateLabels(dto, task);
+        var updatedTask = taskRepository.save(task);
+        return taskMapper.map(updatedTask);
+    }
+
+    @Transactional
+    @Override
+    public void delete(Long id) {
+        log.info("Deleting task: id={}", id);
+
+        var task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format(NOT_FOUND_MSG_TEMPLATE, id)
+                ));
+
+        taskRepository.delete(task);
+        log.info("Task deleted: id={}", id);
+    }
+
+    private void updateStatus(TaskUpdateDTO dto, Task task) {
+        if (dto.getTaskStatus().isPresent()) {
+            task.setTaskStatus(getTaskStatus(dto.getTaskStatus().get()));
+        }
+    }
+
+    private void updateAssignee(TaskUpdateDTO dto, Task task) {
+
+        if (!dto.getAssigneeId().isPresent()) {
+            return;
+        }
+
+        var assigneeId = dto.getAssigneeId().orElse(null);
+
+        if (assigneeId == null) {
+            task.setAssignee(null);
+            return;
+        }
+
+        task.setAssignee(getUser(assigneeId));
+    }
+
+    private void updateLabels(TaskUpdateDTO dto, Task task) {
+
+        if (!dto.getTaskLabelIds().isPresent()) {
+            return;
+        }
+
+        task.setLabels(getLabels(dto.getTaskLabelIds().get()));
+    }
+
+    private HashSet<Label> getLabels(Set<Long> ids) {
+        var labels = new HashSet<>(labelRepository.findAllById(ids));
+
+        if (labels.size() != ids.size()) {
+            throw new ResourceNotFoundException("One or more labels not found");
+        }
+
+        return labels;
+    }
+
+    private TaskStatus getTaskStatus(String slug) {
+        return taskStatusRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Task status with slug '%s' not found", slug)
+                ));
+    }
+
+    private User getUser(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("User with id %d not found", id)
+                ));
+    }
+}
