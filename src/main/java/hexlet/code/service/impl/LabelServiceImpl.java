@@ -95,12 +95,6 @@ public class LabelServiceImpl implements LabelService {
                         String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
 
-        if (label.getTasks() != null && !label.getTasks().isEmpty()) {
-            throw new ResourceAlreadyExistsException(
-                    String.format("Label with id %d is used by tasks", id)
-            );
-        }
-
         labelRepository.delete(label);
     }
 }

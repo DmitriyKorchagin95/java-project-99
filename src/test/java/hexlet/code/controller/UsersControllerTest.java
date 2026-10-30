@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.user.UserCreateDTO;
 import hexlet.code.dto.user.UserUpdateDTO;
 import hexlet.code.model.User;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.util.ModelGenerator;
 import net.datafaker.Faker;
@@ -22,7 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.transaction.annotation.Transactional;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-@Transactional
 class UsersControllerTest {
 
     @Autowired
@@ -48,6 +47,9 @@ class UsersControllerTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -63,12 +65,14 @@ class UsersControllerTest {
 
     @BeforeEach
     void setUp() {
+        taskRepository.deleteAll();
+        userRepository.deleteAll();
+
         testUser = Instancio.of(modelGenerator.getUserModel()).create();
         userRepository.save(testUser);
 
         token = jwt().jwt(builder -> builder
                 .subject(testUser.getEmail())
-                .claim("id", testUser.getId())
         );
     }
 
@@ -248,4 +252,3 @@ class UsersControllerTest {
         return dto;
     }
 }
-

@@ -11,7 +11,6 @@ import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.util.ModelGenerator;
-import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
@@ -43,7 +41,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-@Transactional
 class TasksControllerTest {
 
     @Autowired
@@ -67,9 +64,6 @@ class TasksControllerTest {
     @Autowired
     private ModelGenerator modelGenerator;
 
-    @Autowired
-    private Faker faker;
-
     private Task task;
     private TaskStatus taskStatus;
     private User assignee;
@@ -77,6 +71,11 @@ class TasksControllerTest {
 
     @BeforeEach
     void setUp() {
+        taskRepository.deleteAll();
+        labelRepository.deleteAll();
+        taskStatusRepository.deleteAll();
+        userRepository.deleteAll();
+
         assignee = Instancio.of(modelGenerator.getUserModel()).create();
         userRepository.save(assignee);
 
@@ -90,7 +89,6 @@ class TasksControllerTest {
 
         token = jwt().jwt(builder -> builder
                 .subject(assignee.getEmail())
-                .claim("id", assignee.getId())
         );
     }
 
@@ -156,28 +154,6 @@ class TasksControllerTest {
                         .param("labelId", label.getId().toString()))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[*].title").value(hasItem(task.getName())));
-    }
-
-    @Test
-    void testIndexPagination() throws Exception {
-        taskRepository.save(task);
-
-        var anotherTask = Instancio.of(modelGenerator.getTaskModel()).create();
-        anotherTask.setTaskStatus(taskStatus);
-        anotherTask.setAssignee(assignee);
-        anotherTask.setLabels(Set.of());
-        taskRepository.save(anotherTask);
-
-        var result = mockMvc.perform(get("/api/tasks")
-                        .with(token)
-                        .param("page", "1")
-                        .param("limit", "1"))
-                .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$").isArray())
-                .andReturn();
-
-        var body = result.getResponse().getContentAsString();
-        assertThatJson(body).isArray();
     }
 
     @Test

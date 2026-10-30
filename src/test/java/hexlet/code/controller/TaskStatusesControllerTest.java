@@ -6,7 +6,6 @@ import hexlet.code.dto.status.TaskStatusUpdateDTO;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.util.ModelGenerator;
-import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.transaction.annotation.Transactional;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +34,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-@Transactional
 class TaskStatusesControllerTest {
 
     @Autowired
@@ -49,9 +46,6 @@ class TaskStatusesControllerTest {
     private TaskStatusRepository taskStatusRepository;
 
     @Autowired
-    private Faker faker;
-
-    @Autowired
     private ModelGenerator modelGenerator;
 
     private TaskStatus taskStatus;
@@ -59,6 +53,7 @@ class TaskStatusesControllerTest {
 
     @BeforeEach
     void setUp() {
+        taskStatusRepository.deleteAll();
         taskStatus = Instancio.of(modelGenerator.getStatusModel()).create();
         token = jwt().jwt(builder -> builder.subject("test-user@example.com"));
     }

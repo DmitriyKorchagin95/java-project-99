@@ -8,7 +8,6 @@ import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.util.ModelGenerator;
-import jakarta.persistence.EntityManager;
 import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
@@ -43,7 +41,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-@Transactional
 class LabelsControllerTest {
 
     @Autowired
@@ -62,9 +59,6 @@ class LabelsControllerTest {
     private TaskStatusRepository taskStatusRepository;
 
     @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
     private ModelGenerator modelGenerator;
 
     @Autowired
@@ -75,6 +69,10 @@ class LabelsControllerTest {
 
     @BeforeEach
     void setUp() {
+        taskRepository.deleteAll();
+        labelRepository.deleteAll();
+        taskStatusRepository.deleteAll();
+
         label = Instancio.of(modelGenerator.getLabelWithoutTasksModel()).create();
         token = jwt().jwt(builder -> builder.subject("test-user@example.com"));
     }
@@ -269,10 +267,6 @@ class LabelsControllerTest {
         task.setTaskStatus(taskStatus);
         task.setLabels(Set.of(label));
         taskRepository.save(task);
-
-
-        taskRepository.flush();
-        entityManager.clear();
 
         mockMvc.perform(delete("/api/labels/{id}", label.getId()).with(token))
                 .andExpect(status().isConflict());

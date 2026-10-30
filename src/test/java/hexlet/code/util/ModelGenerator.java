@@ -6,15 +6,17 @@ import hexlet.code.model.TaskStatus;
 import hexlet.code.model.User;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.instancio.Model;
 import org.instancio.Select;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import net.datafaker.Faker;
 
 @Getter
 @Component
 public class ModelGenerator {
+    private final PasswordEncoder passwordEncoder;
     private Model<User> userModel;
     private Model<TaskStatus> statusModel;
     private Model<Task> taskModel;
@@ -22,9 +24,14 @@ public class ModelGenerator {
     private Model<Label> labelWithoutTasksModel;
     private Faker faker;
 
+    public ModelGenerator(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
     @PostConstruct
     private void init() {
         faker = new Faker();
+
 
         userModel = Instancio.of(User.class)
                 .ignore(Select.field(User::getUpdatedAt))
@@ -33,7 +40,7 @@ public class ModelGenerator {
                 .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
                 .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
                 .supply(Select.field(User::getLastName), () -> faker.name().lastName())
-                .supply(Select.field(User::getPasswordHash), () -> faker.internet().password())
+                .supply(Select.field(User::getPasswordHash), () -> passwordEncoder.encode(faker.internet().password()))
                 .ignore(Select.field(User::getTasks))
                 .toModel();
 
