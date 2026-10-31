@@ -1,7 +1,7 @@
 package hexlet.code.service.impl;
 
 import hexlet.code.service.AuthenticationService;
-import hexlet.code.service.JsonWebTokenService;
+import hexlet.code.util.JsonWebTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
-    private final JsonWebTokenService jsonWebTokenService;
+    private final JsonWebTokenUtils jsonWebTokenUtils;
     private final AuthenticationManager authenticationManager;
 
     @Override
@@ -22,6 +22,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         );
 
         authenticationManager.authenticate(authentication);
-        return jsonWebTokenService.generateToken(username);
+        return jsonWebTokenUtils.generateToken(username);
     }
 }
