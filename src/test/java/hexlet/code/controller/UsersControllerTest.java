@@ -86,8 +86,7 @@ class UsersControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertThatJson(body)
-                .isArray();
+        assertThatJson(body).isArray();
     }
 
     @Test
@@ -105,23 +104,25 @@ class UsersControllerTest {
                 .getContentAsString();
 
         assertThatJson(body)
-                .node("email")
-                .isEqualTo(testUser.getEmail());
+                .node("email").isEqualTo(testUser.getEmail());
 
         assertThatJson(body)
-                .node("password")
-                .isAbsent();
+                .node("password").isAbsent();
+    }
+
+    @Test
+    void testShowWithoutTokenUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/users/{id}", testUser.getId()))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void testCreate() throws Exception {
         var dto = buildCreateDto();
 
-        mockMvc.perform(
-                        post("/api/users")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(om.writeValueAsString(dto))
-                )
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
 
         var user = userRepository.findByEmail(dto.getEmail()).orElseThrow();
@@ -137,11 +138,9 @@ class UsersControllerTest {
         var dto = buildCreateDto();
         dto.setEmail(testUser.getEmail());
 
-        mockMvc.perform(
-                        post("/api/users")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(om.writeValueAsString(dto))
-                )
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
                 .andExpect(status().isConflict());
     }
 
@@ -150,11 +149,9 @@ class UsersControllerTest {
         var dto = buildCreateDto();
         dto.setEmail("invalid-email");
 
-        mockMvc.perform(
-                        post("/api/users")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(om.writeValueAsString(dto))
-                )
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -163,12 +160,10 @@ class UsersControllerTest {
         var oldFirstName = testUser.getFirstName();
         var dto = buildUpdateDto(JsonNullable.of("updated@email.com"));
 
-        mockMvc.perform(
-                        put("/api/users/{id}", testUser.getId())
-                                .with(token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(om.writeValueAsString(dto))
-                )
+        mockMvc.perform(put("/api/users/{id}", testUser.getId())
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
                 .andExpect(status().isOk());
 
         userRepository.flush();
@@ -177,6 +172,20 @@ class UsersControllerTest {
 
         assertThat(updatedUser.getEmail()).isEqualTo("updated@email.com");
         assertThat(updatedUser.getFirstName()).isEqualTo(oldFirstName);
+    }
+
+    @Test
+    void testUpdatePartialPayload() throws Exception {
+        var dto = new UserUpdateDTO();
+
+        mockMvc.perform(put("/api/users/{id}", testUser.getId())
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
+                .andExpect(status().isOk());
+
+        var user = userRepository.findById(testUser.getId()).orElseThrow();
+        assertThat(user.getEmail()).isEqualTo(testUser.getEmail());
     }
 
     @Test
@@ -191,12 +200,10 @@ class UsersControllerTest {
 
         var dto = buildUpdateDto(JsonNullable.of("hacked@email.com"));
 
-        mockMvc.perform(
-                        put("/api/users/{id}", testUser.getId())
-                                .with(alienToken)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(om.writeValueAsString(dto))
-                )
+        mockMvc.perform(put("/api/users/{id}", testUser.getId())
+                        .with(alienToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
                 .andExpect(status().isForbidden());
     }
 
@@ -204,13 +211,23 @@ class UsersControllerTest {
     void testUpdateValidationError() throws Exception {
         var dto = buildUpdateDto(JsonNullable.of("not-email"));
 
-        mockMvc.perform(
-                        put("/api/users/{id}", testUser.getId())
-                                .with(token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(om.writeValueAsString(dto))
-                )
+        mockMvc.perform(put("/api/users/{id}", testUser.getId())
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testUpdateNotFound() throws Exception {
+        var dto = buildUpdateDto(JsonNullable.of("new@email.com"));
+        long nonExistingId = 999999L;
+
+        mockMvc.perform(put("/api/users/{id}", nonExistingId)
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -235,6 +252,14 @@ class UsersControllerTest {
 
         mockMvc.perform(delete("/api/users/{id}", testUser.getId()).with(alienToken))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testDestroyNotFound() throws Exception {
+        long nonExistingId = 999999L;
+
+        mockMvc.perform(delete("/api/users/{id}", nonExistingId).with(token))
+                .andExpect(status().isNotFound());
     }
 
     private UserCreateDTO buildCreateDto() {

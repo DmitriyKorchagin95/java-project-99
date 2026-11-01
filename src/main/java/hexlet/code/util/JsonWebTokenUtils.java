@@ -16,8 +16,12 @@ public class JsonWebTokenUtils {
 
     public String generateToken(String username) {
         Instant now = Instant.now();
-        JwtClaimsSet claims = JwtClaimsSet.builder().issuer("self").issuedAt(now)
-                .expiresAt(now.plus(1, ChronoUnit.HOURS)).subject(username).build();
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("self")
+                .issuedAt(now)
+                .expiresAt(now.plus(1, ChronoUnit.HOURS))
+                .subject(username)
+                .build();
         return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 }

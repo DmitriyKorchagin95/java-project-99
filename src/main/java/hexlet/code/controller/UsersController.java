@@ -50,14 +50,16 @@ public class UsersController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("#id == @userRepository.findByEmail(authentication.name).orElse(null)?.id")
+    @PreAuthorize("!@userRepository.existsById(#id) "
+            + "? true : (#id == @userRepository.findByEmail(authentication.name).orElse(null)?.id)")
     public ResponseEntity<UserDTO> update(@Valid @RequestBody UserUpdateDTO userData, @PathVariable Long id) {
         var user = userService.update(id, userData);
         return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("#id == @userRepository.findByEmail(authentication.name).orElse(null)?.id")
+    @PreAuthorize("!@userRepository.existsById(#id) "
+            + "? true : (#id == @userRepository.findByEmail(authentication.name).orElse(null)?.id)")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
