@@ -12,6 +12,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -75,6 +76,7 @@ public class User implements BaseEntity, UserDetails {
     private Instant updatedAt;
 
     @Override
+    @Generated
     public final boolean equals(Object o) {
 
         if (this == o) {
@@ -102,6 +104,7 @@ public class User implements BaseEntity, UserDetails {
     }
 
     @Override
+    @Generated
     public final int hashCode() {
         return this instanceof HibernateProxy
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode()

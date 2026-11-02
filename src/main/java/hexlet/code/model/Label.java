@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -56,6 +57,7 @@ public class Label implements BaseEntity {
     private Instant createdAt;
 
     @Override
+    @Generated
     public final boolean equals(Object o) {
 
         if (this == o) {
@@ -83,6 +85,7 @@ public class Label implements BaseEntity {
     }
 
     @Override
+    @Generated
     public final int hashCode() {
         return this instanceof HibernateProxy
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode()
