@@ -28,12 +28,6 @@ public class LabelServiceImpl implements LabelService {
     public LabelDTO create(LabelCreateDTO dto) {
         log.info("Creating label with name={}", dto.getName());
 
-        if (labelRepository.existsByName(dto.getName())) {
-            throw new ResourceAlreadyExistsException(
-                    String.format("Label with name %s already exists", dto.getName())
-            );
-        }
-
         var label = labelMapper.map(dto);
         var savedLabel = labelRepository.save(label);
 

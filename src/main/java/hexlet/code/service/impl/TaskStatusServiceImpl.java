@@ -95,10 +95,6 @@ public class TaskStatusServiceImpl implements TaskStatusService {
                         String.format(NOT_FOUND_MSG_TEMPLATE, id)
                 ));
 
-        if (taskRepository.existsByTaskStatus(taskStatus)) {
-            throw new ResourceAlreadyExistsException("Cannot delete status: it is used by tasks");
-        }
-
         taskStatusRepository.delete(taskStatus);
     }
 }

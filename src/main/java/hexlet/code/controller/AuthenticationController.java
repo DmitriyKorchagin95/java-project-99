@@ -2,6 +2,7 @@ package hexlet.code.controller;
 
 import hexlet.code.dto.AuthRequest;
 import hexlet.code.service.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,7 +17,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<String> create(@RequestBody @Valid AuthRequest authRequest) {
         var authenticate = authenticationService.authenticate(
                 authRequest.getUsername(),
                 authRequest.getPassword()
